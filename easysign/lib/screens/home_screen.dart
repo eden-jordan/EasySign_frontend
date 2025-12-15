@@ -16,20 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-
-  final List<Widget> _screens = const [
-    Dashboard(),
-    Horaires(),
-    Personnel(),
-    Rapports(),
-    Admins(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final PageController _pageController = PageController();
 
   final List<String> _labels = [
     "Accueil",
@@ -45,15 +32,34 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.group_outlined,
     Icons.report_outlined,
     Icons.person_add_outlined,
-    Icons.settings_outlined,
   ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.jumpToPage(index);
+  }
+
+  void _navigateToTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.jumpToPage(index);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'EasySign',
+          _selectedIndex == 0 ? 'EasySign' : _labels[_selectedIndex],
           style: TextStyle(
             color: Appcolors.color_3,
             fontSize: 24,
@@ -61,6 +67,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
+          if (_selectedIndex != 0)
+            IconButton(
+              icon: Icon(Icons.home, color: Appcolors.color_2, size: 30),
+              onPressed: () {
+                _navigateToTab(0);
+              },
+            ),
           IconButton(
             icon: Icon(
               Icons.settings_outlined,
@@ -78,14 +91,30 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: _screens[_selectedIndex],
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(), // Désactive le swipe
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        children: [
+          // Dashboard avec callback
+          Dashboard(onNavigateToTab: _navigateToTab),
+          const Horaires(),
+          const Personnel(),
+          const Rapports(),
+          const Admins(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Appcolors.color_2,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
-        items: List.generate(5, (index) {
+        items: List.generate(_labels.length, (index) {
           return BottomNavigationBarItem(
             icon: Icon(_icons[index]),
             label: _labels[index],

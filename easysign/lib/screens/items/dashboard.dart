@@ -1,11 +1,11 @@
-import 'package:easysign/screens/items/horaires.dart';
-import 'package:easysign/screens/items/personnel.dart';
-import 'package:easysign/screens/items/rapports.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({super.key});
+  final Function(int)? onNavigateToTab;
+
+  const Dashboard({super.key, this.onNavigateToTab});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -363,41 +363,36 @@ class Dashboard extends StatelessWidget {
                 _buildQuickActionButton(
                   icon: Icons.fingerprint,
                   label: 'Émargement',
-                  onTap: () {},
+                  onTap: () {
+                    // Émargement - tu peux ajouter un écran dédié si besoin
+                    // Pour l'instant, on reste sur le dashboard
+                  },
                   color: Appcolors.color_2,
                 ),
                 _buildQuickActionButton(
                   icon: Icons.person_add_outlined,
-                  label: 'Ajouter',
+                  label: 'Personnel',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Personnel(),
-                      ),
-                    );
+                    // Navigue vers l'onglet Personnel (index 2)
+                    onNavigateToTab?.call(2);
                   },
                   color: Colors.green,
                 ),
                 _buildQuickActionButton(
                   icon: Icons.calendar_today_outlined,
-                  label: 'Planning',
+                  label: 'Horaires',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Horaires()),
-                    );
+                    // Navigue vers l'onglet Horaires (index 1)
+                    onNavigateToTab?.call(1);
                   },
                   color: Colors.orange,
                 ),
                 _buildQuickActionButton(
                   icon: Icons.report_outlined,
-                  label: 'Rapport',
+                  label: 'Rapports',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Rapports()),
-                    );
+                    // Navigue vers l'onglet Rapports (index 3)
+                    onNavigateToTab?.call(3);
                   },
                   color: Colors.purple,
                 ),
