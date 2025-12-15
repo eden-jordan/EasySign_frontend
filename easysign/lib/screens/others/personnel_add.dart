@@ -113,7 +113,11 @@ class _PersonnelAddState extends State<PersonnelAdd> {
         ),
         title: const Text(
           'Nouvel employé',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
       ),
       body: Container(
