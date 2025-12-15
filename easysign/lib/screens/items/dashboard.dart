@@ -11,29 +11,29 @@ class Dashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Cartes de statistiques
             _buildStatsCards(),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Section Graphique
             _buildPresenceChart(),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Section Statistiques personnel
             _buildPersonnelStats(),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Section Actions rapides
             _buildQuickActions(context),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -46,9 +46,9 @@ class Dashboard extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.2,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 1.3,
       children: [
         _buildStatCard(
           title: 'Présents',
@@ -87,33 +87,33 @@ class Dashboard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               value,
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -122,7 +122,7 @@ class Dashboard extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 color: Colors.grey,
                 fontWeight: FontWeight.w500,
               ),
@@ -138,38 +138,38 @@ class Dashboard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Présences de la semaine',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const Text(
               'Graphique présences',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             // Simuler un graphique simple
             Container(
-              height: 150,
+              height: 100,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade300),
@@ -180,20 +180,23 @@ class Dashboard extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.bar_chart_outlined,
-                      size: 50,
+                      size: 40,
                       color: Colors.grey.shade400,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
                       'Graphique des présences',
-                      style: TextStyle(color: Colors.grey.shade500),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
             // Légende du graphique
             Row(
@@ -214,12 +217,12 @@ class Dashboard extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 12)),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(fontSize: 11)),
       ],
     );
   }
@@ -229,34 +232,34 @@ class Dashboard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Statistiques du personnel',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const Text(
               'Statistiques personnel',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             // Liste des statistiques
             Column(
@@ -267,14 +270,14 @@ class Dashboard extends StatelessWidget {
                   icon: Icons.people_outline,
                   color: Colors.blue,
                 ),
-                const Divider(height: 20),
+                const Divider(height: 16),
                 _buildStatRow(
                   label: 'Heures moy/jour',
                   value: '8.2',
                   icon: Icons.timer_outlined,
                   color: Colors.purple,
                 ),
-                const Divider(height: 20),
+                const Divider(height: 16),
                 _buildStatRow(
                   label: 'Taux présence',
                   value: '94%',
@@ -298,24 +301,24 @@ class Dashboard extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: color, size: 20),
+          child: Icon(icon, color: color, size: 18),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
         ),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
@@ -329,37 +332,37 @@ class Dashboard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Actions rapides',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 2.5,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 2.8,
               children: [
                 _buildQuickActionButton(
                   icon: Icons.fingerprint,
@@ -378,7 +381,6 @@ class Dashboard extends StatelessWidget {
                   icon: Icons.person_add_outlined,
                   label: 'Personnel',
                   onTap: () {
-                    // Navigue vers l'onglet Personnel (index 2)
                     onNavigateToTab?.call(2);
                   },
                   color: Colors.green,
@@ -387,7 +389,6 @@ class Dashboard extends StatelessWidget {
                   icon: Icons.calendar_today_outlined,
                   label: 'Horaires',
                   onTap: () {
-                    // Navigue vers l'onglet Horaires (index 1)
                     onNavigateToTab?.call(1);
                   },
                   color: Colors.orange,
@@ -396,7 +397,6 @@ class Dashboard extends StatelessWidget {
                   icon: Icons.report_outlined,
                   label: 'Rapports',
                   onTap: () {
-                    // Navigue vers l'onglet Rapports (index 3)
                     onNavigateToTab?.call(3);
                   },
                   color: Colors.purple,
@@ -419,18 +419,22 @@ class Dashboard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 8),
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
             ),
           ],
         ),

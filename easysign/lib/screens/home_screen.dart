@@ -16,7 +16,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  final PageController _pageController = PageController();
+
+  final List<Widget> _screens = const [
+    Dashboard(),
+    Horaires(),
+    Personnel(),
+    Rapports(),
+    Admins(),
+    Parametres(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   final List<String> _labels = [
     "Accueil",
@@ -24,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     "Personnel",
     "Rapports",
     "Admins",
+    "Paramètres",
   ];
 
   final List<IconData> _icons = [
@@ -32,34 +47,15 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.group_outlined,
     Icons.report_outlined,
     Icons.person_add_outlined,
+    Icons.settings_outlined,
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    _pageController.jumpToPage(index);
-  }
-
-  void _navigateToTab(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    _pageController.jumpToPage(index);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _selectedIndex == 0 ? 'EasySign' : _labels[_selectedIndex],
+          'EasySign',
           style: TextStyle(
             color: Appcolors.color_3,
             fontSize: 24,
@@ -67,13 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          if (_selectedIndex != 0)
-            IconButton(
-              icon: Icon(Icons.home, color: Appcolors.color_2, size: 30),
-              onPressed: () {
-                _navigateToTab(0);
-              },
-            ),
           IconButton(
             icon: Icon(
               Icons.settings_outlined,
@@ -91,30 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), // Désactive le swipe
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        children: [
-          // Dashboard avec callback
-          Dashboard(onNavigateToTab: _navigateToTab),
-          const Horaires(),
-          const Personnel(),
-          const Rapports(),
-          const Admins(),
-        ],
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Appcolors.color_2,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
-        items: List.generate(_labels.length, (index) {
+        items: List.generate(5, (index) {
           return BottomNavigationBarItem(
             icon: Icon(_icons[index]),
             label: _labels[index],

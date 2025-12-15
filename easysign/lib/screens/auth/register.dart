@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easysign/screens/home_screen.dart';
-import 'login.dart';
+import 'package:easysign/screens/auth/login.dart';
 import 'package:easysign/themes/app_theme.dart';
 
 class Register extends StatefulWidget {
@@ -40,26 +40,25 @@ class _RegisterState extends State<Register> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(16.0), // Reduced padding
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Titre principal
                   const Column(
                     children: [
                       Text(
                         'Créer une organisation',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 24, // Reduced font size
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 4), // Reduced height
                       Text(
                         'EasySign',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16, // Reduced font size
                           color: Appcolors.color_2,
                           fontWeight: FontWeight.w500,
                         ),
@@ -67,19 +66,20 @@ class _RegisterState extends State<Register> {
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16), // Reduced height
 
-                  // Formulaire d'inscription
                   Container(
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(16), // Reduced padding
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(16), // Reduced radius
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 25,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withOpacity(
+                            0.1,
+                          ), // Reduced opacity
+                          blurRadius: 20, // Reduced blur
+                          offset: const Offset(0, 8), // Reduced offset
                         ),
                       ],
                     ),
@@ -87,7 +87,6 @@ class _RegisterState extends State<Register> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Nom
                           _buildFormField(
                             label: 'Nom',
                             hintText: 'Votre nom',
@@ -101,9 +100,8 @@ class _RegisterState extends State<Register> {
                             },
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10), // Reduced height
 
-                          // Prénom
                           _buildFormField(
                             label: 'Prénom',
                             hintText: 'Votre prénom',
@@ -117,9 +115,8 @@ class _RegisterState extends State<Register> {
                             },
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10), // Reduced height
 
-                          // Email
                           _buildFormField(
                             label: 'Email',
                             hintText: 'votre@email.com',
@@ -139,9 +136,8 @@ class _RegisterState extends State<Register> {
                             },
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10), // Reduced height
 
-                          // Téléphone (optionnel)
                           _buildFormField(
                             label: 'Téléphone (optionnel)',
                             hintText: '+33 6 12 34 56 78',
@@ -151,21 +147,20 @@ class _RegisterState extends State<Register> {
                             isOptional: true,
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10), // Reduced height
 
-                          // Mot de passe
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
                                 'Mot de passe',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14, // Reduced font size
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF333333),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 4), // Reduced height
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
@@ -203,9 +198,8 @@ class _RegisterState extends State<Register> {
                             ],
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10), // Reduced height
 
-                          // Nom de l'organisation
                           _buildFormField(
                             label: 'Nom de l\'organisation',
                             hintText: 'Nom de votre entreprise',
@@ -219,42 +213,43 @@ class _RegisterState extends State<Register> {
                             },
                           ),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 16), // Reduced height
 
-                          // Bouton Créer mon compte
                           SizedBox(
                             width: double.infinity,
-                            height: 56,
+                            height: 48, // Reduced height
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.pushReplacement(
+                                Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const HomeScreen(),
                                   ),
+                                  (route) => false,
                                 );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolors.color_2,
                                 foregroundColor: Colors.white,
-                                elevation: 4,
+                                elevation: 2, // Reduced elevation
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    8,
+                                  ), // Reduced radius
                                 ),
                               ),
                               child: const Text(
                                 'Créer mon compte',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16, // Reduced font size
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16), // Reduced height
 
-                          // Lien pour se connecter
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -262,7 +257,7 @@ class _RegisterState extends State<Register> {
                                 'Déjà un compte ? ',
                                 style: TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 15,
+                                  fontSize: 14, // Reduced font size
                                 ),
                               ),
                               GestureDetector(
@@ -279,7 +274,7 @@ class _RegisterState extends State<Register> {
                                   style: TextStyle(
                                     color: Appcolors.color_2,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 15,
+                                    fontSize: 14, // Reduced font size
                                   ),
                                 ),
                               ),
@@ -290,7 +285,7 @@ class _RegisterState extends State<Register> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20), // Reduced height
                 ],
               ),
             ),
@@ -300,7 +295,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  // Widget réutilisable pour les champs de formulaire
   Widget _buildFormField({
     required String label,
     required String hintText,
@@ -318,7 +312,7 @@ class _RegisterState extends State<Register> {
             Text(
               label,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14, // Reduced font size
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF333333),
               ),
@@ -328,12 +322,15 @@ class _RegisterState extends State<Register> {
                 padding: const EdgeInsets.only(left: 4),
                 child: Text(
                   '(optionnel)',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ), // Reduced font size
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4), // Reduced height
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,

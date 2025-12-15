@@ -8,36 +8,35 @@ class Emargement extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // En-tête avec titre et heure
             _buildHeader(context),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Date actuelle
             _buildDateSection(),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
 
             // Bouton Scanner biométrie
             _buildScanButton(),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
 
             // Historique du jour
             _buildDailyHistory(),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
           ],
         ),
       ),
     );
   }
 
-  // En-tête avec titre et heure
   Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -47,27 +46,26 @@ class Emargement extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
+          iconSize: 20,
         ),
-        Center(
-          child: const Text(
-            'Émargement',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
+        const Text(
+          'Émargement',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Appcolors.color_2.withOpacity(0.1),
+            color: Appcolors.color_2.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             _getCurrentTime(),
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Appcolors.color_2,
             ),
@@ -77,10 +75,9 @@ class Emargement extends StatelessWidget {
     );
   }
 
-  // Section date actuelle
   Widget _buildDateSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
@@ -91,15 +88,17 @@ class Emargement extends StatelessWidget {
           Icon(
             Icons.calendar_today_outlined,
             color: Appcolors.color_2,
-            size: 24,
+            size: 18,
           ),
-          const SizedBox(width: 12),
-          Text(
-            _getCurrentDate(),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _getCurrentDate(),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -107,14 +106,13 @@ class Emargement extends StatelessWidget {
     );
   }
 
-  // Bouton Scanner biométrie
   Widget _buildScanButton() {
     return Center(
       child: Column(
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: Appcolors.color_2,
               shape: BoxShape.circle,
@@ -126,21 +124,21 @@ class Emargement extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.fingerprint, size: 60, color: Colors.white),
+            child: const Icon(Icons.fingerprint, size: 40, color: Colors.white),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           const Text(
             'Scanner biométrie',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.black,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             'Placez votre doigt sur le scanner',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
         ],
@@ -148,7 +146,6 @@ class Emargement extends StatelessWidget {
     );
   }
 
-  // Historique du jour
   Widget _buildDailyHistory() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,47 +153,36 @@ class Emargement extends StatelessWidget {
         const Text(
           'Historique du jour',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
         ),
-        const SizedBox(height: 20),
-
-        // Arrivée
+        const SizedBox(height: 12),
         _buildHistoryItem(
           type: 'Arrivée',
           time: '08:15',
           icon: Icons.login,
           color: Colors.green,
         ),
-
-        const SizedBox(height: 16),
-
-        // Début pause
+        const SizedBox(height: 10),
         _buildHistoryItem(
           type: 'Début pause',
           time: '12:00',
           icon: Icons.coffee,
           color: Colors.orange,
         ),
-
-        const SizedBox(height: 16),
-
-        // Fin pause
+        const SizedBox(height: 10),
         _buildHistoryItem(
           type: 'Fin pause',
           time: '13:00',
           icon: Icons.coffee_outlined,
           color: Colors.blue,
         ),
-
-        const SizedBox(height: 24),
       ],
     );
   }
 
-  // Item d'historique
   Widget _buildHistoryItem({
     required String type,
     required String time,
@@ -204,13 +190,13 @@ class Emargement extends StatelessWidget {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -219,14 +205,14 @@ class Emargement extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,21 +220,21 @@ class Emargement extends StatelessWidget {
                 Text(
                   type,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   'Enregistré à $time',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(20),
@@ -256,7 +242,7 @@ class Emargement extends StatelessWidget {
             child: Text(
               time,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
@@ -267,7 +253,6 @@ class Emargement extends StatelessWidget {
     );
   }
 
-  // Méthodes utilitaires pour obtenir l'heure et la date
   String _getCurrentTime() {
     final now = DateTime.now();
     return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
@@ -298,7 +283,6 @@ class Emargement extends StatelessWidget {
       'novembre',
       'décembre',
     ];
-
     return '${days[now.weekday - 1]} ${now.day} ${months[now.month - 1]} ${now.year}';
   }
 }

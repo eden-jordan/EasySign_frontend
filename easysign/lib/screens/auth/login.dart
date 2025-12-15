@@ -15,22 +15,22 @@ class Login extends StatelessWidget {
         fontFamily: 'Roboto',
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: Colors.grey.shade300),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: Colors.grey.shade300),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: Appcolors.color_2, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 18,
+            horizontal: 12,
+            vertical: 10,
           ),
         ),
       ),
@@ -68,27 +68,26 @@ class _LoginPageState extends State<LoginPage> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // En-tête avec logo et titre
                   Column(
                     children: [
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       const Text(
                         'Connexion',
                         style: TextStyle(
-                          fontSize: 32,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       const Text(
                         'EasySign',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           color: Appcolors.color_2,
                           fontWeight: FontWeight.w500,
                         ),
@@ -96,19 +95,18 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
 
-                  // Carte de formulaire
                   Container(
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 25,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -116,19 +114,18 @@ class _LoginPageState extends State<LoginPage> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Champ Email
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
                                 'Email',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF333333),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 4),
                               TextFormField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
@@ -154,21 +151,20 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
-                          // Champ Mot de passe
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
                                 'Mot de passe',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF333333),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 4),
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
@@ -206,9 +202,8 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
 
-                          // Lien "Mot de passe oublié"
                           Align(
                             alignment: Alignment.centerRight,
                             child: GestureDetector(
@@ -218,18 +213,17 @@ class _LoginPageState extends State<LoginPage> {
                                 style: TextStyle(
                                   color: Appcolors.color_2,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 15,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 20),
 
-                          // Bouton Se connecter
                           SizedBox(
                             width: double.infinity,
-                            height: 56,
+                            height: 48,
                             child: ElevatedButton(
                               onPressed: () {
                                 Navigator.pushReplacement(
@@ -242,24 +236,23 @@ class _LoginPageState extends State<LoginPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolors.color_2,
                                 foregroundColor: Colors.white,
-                                elevation: 4,
+                                elevation: 3,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               child: const Text(
                                 'Se connecter',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
-                          // Lien pour créer un compte
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -267,7 +260,7 @@ class _LoginPageState extends State<LoginPage> {
                                 'Nouveau sur EasySign ? ',
                                 style: TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 15,
+                                  fontSize: 12,
                                 ),
                               ),
                               GestureDetector(
@@ -284,7 +277,7 @@ class _LoginPageState extends State<LoginPage> {
                                   style: TextStyle(
                                     color: Appcolors.color_2,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 15,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
@@ -295,7 +288,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

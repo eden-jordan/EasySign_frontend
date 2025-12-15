@@ -20,19 +20,19 @@ class StartScreen extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo et titre
                   const Column(
                     children: [
-                      Icon(Icons.fingerprint, size: 80, color: Colors.white),
-                      SizedBox(height: 16),
+                      Icon(Icons.fingerprint, size: 60, color: Colors.white),
+                      SizedBox(height: 12),
                       Text(
                         'EasySign',
                         style: TextStyle(
-                          fontSize: 36,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -40,24 +40,24 @@ class StartScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
                   // Sous-titre
                   const Text(
                     'Gestion du personnel simplifiée',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 14,
                       color: Colors.white70,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // Image entre les deux sections
                   Container(
-                    width: 250,
-                    height: 180,
+                    width: 200,
+                    height: 140,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       color: Colors.white.withValues(alpha: 0.1),
@@ -71,17 +71,17 @@ class StartScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // Section "Gestion RH Bienvenue"
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -92,41 +92,41 @@ class StartScreen extends StatelessWidget {
                         const Text(
                           'Gestion RH',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Appcolors.color_2,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         const Text(
                           'Bienvenue',
                           style: TextStyle(
-                            fontSize: 32,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Appcolors.color_1,
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         const Text(
                           'Gérez facilement les présences de votre équipe avec notre système d\'émargement biométrique moderne et sécurisé.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             color: Colors.black87,
                             height: 1.5,
                           ),
                         ),
 
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 20),
 
                         // Boutons
                         Column(
                           children: [
                             SizedBox(
                               width: double.infinity,
-                              height: 56,
+                              height: 48,
                               child: ElevatedButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -147,18 +147,18 @@ class StartScreen extends StatelessWidget {
                                 child: const Text(
                                   'Créer une organisation',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
                             ),
 
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
 
                             SizedBox(
                               width: double.infinity,
-                              height: 56,
+                              height: 48,
                               child: OutlinedButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -181,7 +181,7 @@ class StartScreen extends StatelessWidget {
                                 child: const Text(
                                   'Se connecter',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -193,7 +193,7 @@ class StartScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
