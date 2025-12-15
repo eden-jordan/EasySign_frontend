@@ -1,3 +1,4 @@
+import 'package:easysign/screens/others/emargement.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 
@@ -364,8 +365,12 @@ class Dashboard extends StatelessWidget {
                   icon: Icons.fingerprint,
                   label: 'Émargement',
                   onTap: () {
-                    // Émargement - tu peux ajouter un écran dédié si besoin
-                    // Pour l'instant, on reste sur le dashboard
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const Emargement(),
+                      ),
+                    );
                   },
                   color: Appcolors.color_2,
                 ),
