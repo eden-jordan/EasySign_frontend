@@ -23,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Personnel(),
     Rapports(),
     Admins(),
-    Parametres(),
   ];
 
   void _onItemTapped(int index) {
@@ -38,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
     "Personnel",
     "Rapports",
     "Admins",
-    "Paramètres",
   ];
 
   final List<IconData> _icons = [
@@ -64,8 +62,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.person, color: Appcolors.color_1, size: 30),
-            onPressed: () {},
+            icon: Icon(
+              Icons.settings_outlined,
+              color: Appcolors.color_2,
+              size: 30,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Parametres()),
+              );
+            },
           ),
         ],
         backgroundColor: Colors.white,
@@ -78,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
-        items: List.generate(6, (index) {
+        items: List.generate(5, (index) {
           return BottomNavigationBarItem(
             icon: Icon(_icons[index]),
             label: _labels[index],

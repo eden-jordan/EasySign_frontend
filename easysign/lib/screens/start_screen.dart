@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'auth/login.dart';
+import 'auth/register.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -127,12 +129,10 @@ class StartScreen extends StatelessWidget {
                               height: 56,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // Action pour créer une organisation
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Création d\'organisation en cours...',
-                                      ),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const Register(),
                                     ),
                                   );
                                 },
@@ -161,10 +161,10 @@ class StartScreen extends StatelessWidget {
                               height: 56,
                               child: OutlinedButton(
                                 onPressed: () {
-                                  // Action pour se connecter
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Connexion en cours...'),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const Login(),
                                     ),
                                   );
                                 },
