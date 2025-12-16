@@ -17,38 +17,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = const [
-    Dashboard(),
-    Horaires(),
-    Personnel(),
-    Rapports(),
-    Admins(),
-    Parametres(),
-  ];
-
-  void _onItemTapped(int index) {
+  // Fonction pour naviguer vers un onglet spécifique
+  void _navigateToTab(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
-
-  final List<String> _labels = [
-    "Accueil",
-    "Horaires",
-    "Personnel",
-    "Rapports",
-    "Admins",
-    "Paramètres",
-  ];
-
-  final List<IconData> _icons = [
-    Icons.home_outlined,
-    Icons.calendar_month_outlined,
-    Icons.group_outlined,
-    Icons.report_outlined,
-    Icons.person_add_outlined,
-    Icons.settings_outlined,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -80,20 +54,60 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: _screens[_selectedIndex],
+      body: _selectedIndex == 0
+          ? Dashboard(onNavigateToTab: _navigateToTab)
+          : _getScreenForIndex(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Appcolors.color_2,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
-        items: List.generate(5, (index) {
-          return BottomNavigationBarItem(
-            icon: Icon(_icons[index]),
-            label: _labels[index],
-          );
-        }),
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Accueil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            label: 'Horaires',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group_outlined),
+            label: 'Personnel',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.report_outlined),
+            label: 'Rapports',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_add_outlined),
+            label: 'Admins',
+          ),
+        ],
       ),
     );
+  }
+
+  // Méthode pour obtenir l'écran correspondant à l'index
+  Widget _getScreenForIndex(int index) {
+    switch (index) {
+      case 0:
+        return Dashboard(onNavigateToTab: _navigateToTab);
+      case 1:
+        return const Horaires();
+      case 2:
+        return const Personnel();
+      case 3:
+        return const Rapports();
+      case 4:
+        return const Admins();
+      default:
+        return Dashboard(onNavigateToTab: _navigateToTab);
+    }
   }
 }
