@@ -27,7 +27,7 @@ class StartScreen extends StatelessWidget {
                   // Logo et titre
                   const Column(
                     children: [
-                      Icon(Icons.fingerprint, size: 60, color: Colors.white),
+                      Icon(Icons.qr_code, size: 60, color: Colors.white),
                       SizedBox(height: 12),
                       Text(
                         'EasySign',

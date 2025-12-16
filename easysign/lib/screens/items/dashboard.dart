@@ -365,7 +365,7 @@ class Dashboard extends StatelessWidget {
               childAspectRatio: 2.8,
               children: [
                 _buildQuickActionButton(
-                  icon: Icons.fingerprint,
+                  icon: Icons.qr_code,
                   label: 'Émargement',
                   onTap: () {
                     Navigator.push(
