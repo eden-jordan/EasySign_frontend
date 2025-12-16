@@ -32,27 +32,37 @@ class _HomeScreenState extends State<HomeScreen> {
           'EasySign',
           style: TextStyle(
             color: Appcolors.color_3,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w500,
+            fontFamily:
+                'YourCustomFont', // Si vous avez une police personnalisée
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.settings_outlined,
-              color: Appcolors.color_2,
-              size: 30,
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade200, width: 1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Parametres()),
-              );
-            },
+            margin: EdgeInsets.only(right: 16),
+            child: IconButton(
+              icon: Icon(
+                Icons.settings_outlined,
+                color: Appcolors.color_2,
+                size: 22,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Parametres()),
+                );
+              },
+            ),
           ),
         ],
         backgroundColor: Colors.white,
         centerTitle: true,
+        elevation: 0,
       ),
       body: _selectedIndex == 0
           ? Dashboard(onNavigateToTab: _navigateToTab)
