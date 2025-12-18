@@ -124,11 +124,11 @@ class Emargement extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.fingerprint, size: 40, color: Colors.white),
+            child: const Icon(Icons.qr_code, size: 40, color: Colors.white),
           ),
           const SizedBox(height: 12),
           const Text(
-            'Scanner biométrie',
+            'Scanner le code QR',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -137,7 +137,7 @@ class Emargement extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Placez votre doigt sur le scanner',
+            'Utilisez la caméra pour scanner votre code QR d\'émargement',
             style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),

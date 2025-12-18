@@ -17,7 +17,9 @@ class _RegisterState extends State<Register> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _organizationController = TextEditingController();
+  final _organizationAddressController = TextEditingController();
 
   bool _isPasswordVisible = false;
 
@@ -28,7 +30,9 @@ class _RegisterState extends State<Register> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _organizationController.dispose();
+    _organizationAddressController.dispose();
     super.dispose();
   }
 
@@ -139,7 +143,7 @@ class _RegisterState extends State<Register> {
                           const SizedBox(height: 10), // Reduced height
 
                           _buildFormField(
-                            label: 'Téléphone (optionnel)',
+                            label: 'Téléphone',
                             hintText: '+33 6 12 34 56 78',
                             controller: _phoneController,
                             icon: Icons.phone_outlined,
@@ -200,6 +204,57 @@ class _RegisterState extends State<Register> {
 
                           const SizedBox(height: 10), // Reduced height
 
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Confirmer le mot de passe',
+                                style: TextStyle(
+                                  fontSize: 14, // Reduced font size
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF333333),
+                                ),
+                              ),
+                              const SizedBox(height: 4), // Reduced height
+                              TextFormField(
+                                controller: _confirmPasswordController,
+                                obscureText: !_isPasswordVisible,
+                                decoration: InputDecoration(
+                                  hintText: '••••••••',
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: Color(0xFF1976D2),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _isPasswordVisible
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: const Color(0xFF666666),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isPasswordVisible =
+                                            !_isPasswordVisible;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Veuillez confirmer votre mot de passe';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'Le mot de passe doit contenir au moins 6 caractères';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10), // Reduced height
+
                           _buildFormField(
                             label: 'Nom de l\'organisation',
                             hintText: 'Nom de votre entreprise',
@@ -208,6 +263,21 @@ class _RegisterState extends State<Register> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Veuillez entrer le nom de votre organisation';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 10), // Reduced height
+
+                          _buildFormField(
+                            label: 'Adresse de l\'organisation',
+                            hintText: 'Adresse de votre entreprise',
+                            controller: _organizationAddressController,
+                            icon: Icons.location_on_outlined,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez entrer l\'adresse de votre organisation';
                               }
                               return null;
                             },
