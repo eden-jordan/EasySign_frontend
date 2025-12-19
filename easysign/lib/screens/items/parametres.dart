@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 import 'package:easysign/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/user.dart';
 
 class Parametres extends StatefulWidget {
   const Parametres({super.key});
@@ -16,6 +17,28 @@ class _ParametresScreenState extends State<Parametres> {
   bool _notificationsEnabled = true;
   bool _twoFactorEnabled = false;
   bool _isLoading = false;
+
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    try {
+      final user = await AuthService.getAuthenticatedUser();
+      setState(() {
+        _user = user;
+      });
+    } catch (e) {
+      print("Erreur chargement user: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Erreur chargement user: $e")));
+    }
+  }
 
   void _logout() async {
     // Affiche d'abord la confirmation
@@ -114,7 +137,7 @@ class _ParametresScreenState extends State<Parametres> {
                       ),
                       child: Center(
                         child: Text(
-                          'MD',
+                          '${_user!.prenom[0]}${_user!.nom[0]}',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -124,12 +147,11 @@ class _ParametresScreenState extends State<Parametres> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Marie Dubois',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    Text(
+                      '${_user!.prenom} ${_user!.nom}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),

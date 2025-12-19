@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
+import '../models/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   // Enregistrer superadmin
@@ -59,5 +61,30 @@ class AuthService {
       Uri.parse('${ApiConstants.baseUrl}/logout'),
       headers: {...ApiConstants.headers, 'Authorization': 'Bearer $token'},
     );
+  }
+
+  static Future<User?> getAuthenticatedUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+
+      if (token == null || token.isEmpty) return null;
+
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}/user'),
+        headers: {...ApiConstants.headers, 'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return User.fromJson(data);
+      } else {
+        // Token invalide ou expiré
+        return null;
+      }
+    } catch (e) {
+      print('Erreur getAuthenticatedUser: $e');
+      return null;
+    }
   }
 }
