@@ -3,6 +3,7 @@ import 'package:easysign/screens/auth/register.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 import '../../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -53,12 +54,42 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await AuthService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      final token = response['token'];
+      final user = response['user'];
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userToken', token);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur : ${e.toString()}')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -226,28 +257,7 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: () async {
-                                if (!_formKey.currentState!.validate()) return;
-
-                                final response = await AuthService.login(
-                                  email: _emailController.text.trim(),
-                                  password: _passwordController.text.trim(),
-                                );
-
-                                final token = response['token'];
-                                final user = response['user'];
-
-                                // TODO plus tard
-                                // SharedPreferences prefs = await SharedPreferences.getInstance();
-                                // await prefs.setString('token', token);
-
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const HomeScreen(),
-                                  ),
-                                );
-                              },
+                              onPressed: _isLoading ? null : _login,
 
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolors.color_2,

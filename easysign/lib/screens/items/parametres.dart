@@ -1,5 +1,8 @@
+import 'package:easysign/screens/start_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:easysign/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Parametres extends StatefulWidget {
   const Parametres({super.key});
@@ -12,28 +15,22 @@ class _ParametresScreenState extends State<Parametres> {
   bool _isDarkMode = false;
   bool _notificationsEnabled = true;
   bool _twoFactorEnabled = false;
+  bool _isLoading = false;
 
-  void _logout() {
-    showDialog(
+  void _logout() async {
+    // Affiche d'abord la confirmation
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Se déconnecter'),
         content: const Text('Voulez-vous vraiment vous déconnecter ?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Déconnexion réussie'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Appcolors.color_2),
             child: const Text(
               'Se déconnecter',
@@ -43,6 +40,39 @@ class _ParametresScreenState extends State<Parametres> {
         ],
       ),
     );
+
+    // Si l'utilisateur annule, on quitte
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken') ?? '';
+      if (token.isEmpty) throw Exception("Token introuvable");
+      // Appel à ton service de logout
+      await AuthService.logout(token);
+      await prefs.remove('userToken');
+
+      // Redirection vers l'écran d'accueil
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const StartScreen()),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Déconnexion réussie'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur : ${e.toString()}')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -332,7 +362,7 @@ class _ParametresScreenState extends State<Parametres> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'Version 1.2.0 - Dernière mise à jour',
+                              'Version 1.0.0 - Dernière mise à jour',
                             ),
                           ),
                         );
@@ -399,31 +429,6 @@ class _ParametresScreenState extends State<Parametres> {
                       ),
                     ),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    Text(
-                      'EasySign - Gestion RH',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '© 2024 Tous droits réservés',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
                 ),
               ),
 
