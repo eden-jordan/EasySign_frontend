@@ -267,13 +267,17 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text(
-                                'Se connecter',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text(
+                                      'Se connecter',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
 

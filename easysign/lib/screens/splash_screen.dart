@@ -1,6 +1,8 @@
+import 'package:easysign/screens/home_screen.dart';
+import 'package:easysign/screens/start_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'start_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,6 +13,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -21,15 +24,30 @@ class _SplashScreenState extends State<SplashScreen> {
         setState(() {});
         _controller.play();
 
-        // Naviguer vers HomeScreen à la fin de la vidéo
         _controller.addListener(() {
-          if (_controller.value.position >= _controller.value.duration) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const StartScreen()),
-            );
+          if (_controller.value.position >= _controller.value.duration &&
+              !_navigated) {
+            _navigated = true;
+            _redirectUser();
           }
         });
       });
+  }
+
+  Future<void> _redirectUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('userToken');
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => token != null && token.isNotEmpty
+            ? const HomeScreen()
+            : const StartScreen(),
+      ),
+    );
   }
 
   @override
