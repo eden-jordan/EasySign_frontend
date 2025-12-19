@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:easysign/screens/home_screen.dart';
 import 'package:easysign/screens/auth/login.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:easysign/services/auth_service.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -34,6 +34,47 @@ class _RegisterState extends State<Register> {
     _organizationController.dispose();
     _organizationAddressController.dispose();
     super.dispose();
+  }
+
+  bool _isLoading = false;
+
+  void _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Les mots de passe ne correspondent pas")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Créer le superadmin
+      final userResponse = await AuthService.registerSuperadmin(
+        nom: _lastNameController.text,
+        prenom: _firstNameController.text,
+        email: _emailController.text,
+        tel: _phoneController.text,
+        password: _passwordController.text,
+        organisationNom: _organizationController.text,
+        organisationAdresse: _organizationAddressController.text,
+      );
+
+      // Rediriger vers Home
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const Login()),
+        (route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur : ${e.toString()}')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -287,34 +328,28 @@ class _RegisterState extends State<Register> {
 
                           SizedBox(
                             width: double.infinity,
-                            height: 48, // Reduced height
+                            height: 48,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const HomeScreen(),
-                                  ),
-                                  (route) => false,
-                                );
-                              },
+                              onPressed: _isLoading ? null : _register,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolors.color_2,
                                 foregroundColor: Colors.white,
-                                elevation: 2, // Reduced elevation
+                                elevation: 2,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    8,
-                                  ), // Reduced radius
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: const Text(
-                                'Créer mon compte',
-                                style: TextStyle(
-                                  fontSize: 16, // Reduced font size
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text(
+                                      'Créer mon compte',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
 

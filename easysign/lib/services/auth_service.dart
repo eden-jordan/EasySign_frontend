@@ -8,7 +8,10 @@ class AuthService {
     required String nom,
     required String prenom,
     required String email,
+    String? tel,
     required String password,
+    required String organisationNom,
+    required String organisationAdresse,
   }) async {
     final response = await http.post(
       Uri.parse('${ApiConstants.baseUrl}/register-superadmin'),
@@ -17,11 +20,18 @@ class AuthService {
         'nom': nom,
         'prenom': prenom,
         'email': email,
+        'tel': tel,
         'password': password,
+        'organisation_nom': organisationNom,
+        'organisation_adresse': organisationAdresse,
       }),
     );
 
-    return jsonDecode(response.body);
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(jsonDecode(response.body)['message']);
+    }
   }
 
   // Login

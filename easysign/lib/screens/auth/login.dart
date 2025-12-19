@@ -2,6 +2,7 @@ import 'package:easysign/screens/home_screen.dart';
 import 'package:easysign/screens/auth/register.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import '../../services/auth_service.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -225,14 +226,29 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
+                                if (!_formKey.currentState!.validate()) return;
+
+                                final response = await AuthService.login(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
+                                );
+
+                                final token = response['token'];
+                                final user = response['user'];
+
+                                // TODO plus tard
+                                // SharedPreferences prefs = await SharedPreferences.getInstance();
+                                // await prefs.setString('token', token);
+
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const HomeScreen(),
+                                    builder: (_) => const HomeScreen(),
                                   ),
                                 );
                               },
+
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolors.color_2,
                                 foregroundColor: Colors.white,

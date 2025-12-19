@@ -14,19 +14,21 @@ class OrganisationService {
     'Authorization': 'Bearer $token',
   };
 
-  Future<Organisation> createOrganisation(String nom, String adresse) async {
-    final response = await http.post(
-      Uri.parse('${ApiConstants.baseUrl}/organisation'),
-      headers: _headers,
-      body: jsonEncode({'nom': nom, 'adresse': adresse}),
-    );
+  // Future<Organisation> createOrganisation(String nom, String adresse) async {
+  //   final response = await http.post(
+  //     Uri.parse('${ApiConstants.baseUrl}/organisation-store'),
+  //     headers: ApiConstants.headers,
+  //     body: jsonEncode({'nom': nom, 'adresse': adresse}),
+  //   );
 
-    if (response.statusCode == 201) {
-      return Organisation.fromJson(jsonDecode(response.body)['organisation']);
-    } else {
-      throw Exception(jsonDecode(response.body)['message']);
-    }
-  }
+  //   if (response.statusCode == 201) {
+  //     return Organisation.fromJson(jsonDecode(response.body)['organisation']);
+  //   } else {
+  //     final errorMessage =
+  //         jsonDecode(response.body)['message'] ?? 'Erreur inconnue';
+  //     throw Exception(errorMessage);
+  //   }
+  // }
 
   Future<Organisation> getOrganisation() async {
     final response = await http.get(
