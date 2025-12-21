@@ -1,3 +1,4 @@
+import 'package:easysign/screens/others/admin_add.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 
@@ -176,8 +177,9 @@ class _AdminsScreenState extends State<Admins> {
       // Bouton flottant pour ajouter
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ajouter un nouvel administrateur')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminAdd()),
           );
         },
         backgroundColor: Appcolors.color_2,
