@@ -462,23 +462,37 @@ class _AdminsScreenState extends State<Admins> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.edit),
-                    title: const Text('Modifier'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Modifier $fullName')),
-                      );
-                    },
-                  ),
-                  ListTile(
                     leading: const Icon(Icons.delete),
                     title: const Text('Supprimer'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Supprimer $fullName')),
-                      );
+                    onTap: () async {
+                      Navigator.pop(context); // fermer la boîte de dialogue
+                      if (_authToken == null) return;
+
+                      try {
+                        await UserService.deleteAdmin(
+                          adminId: admin.id,
+                          token: _authToken!,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Admin supprimé avec succès'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        // Rafraîchir la liste après suppression
+                        await _refreshAdmins();
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.toString().replaceAll('Exception: ', ''),
+                            ),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ],

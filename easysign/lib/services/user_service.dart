@@ -48,4 +48,21 @@ class UserService {
       throw Exception('Echec de l\'ajout de l\'admin');
     }
   }
+
+  //Supprimer un admin
+  static Future<void> deleteAdmin({
+    required int adminId,
+    required String token,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('${ApiConstants.baseUrl}/delete-admin/$adminId'),
+      headers: {...ApiConstants.headers, 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      final message = data['message'] ?? 'Echec de la suppression de l\'admin';
+      throw Exception(message);
+    }
+  }
 }
