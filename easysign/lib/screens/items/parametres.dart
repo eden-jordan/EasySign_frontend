@@ -354,34 +354,6 @@ class _ParametresScreenState extends State<Parametres> {
                               );
                             },
                           ),
-                          _buildSettingsItem(
-                            icon: Icons.security_outlined,
-                            title: 'Authentification à deux facteurs',
-                            trailing: Switch(
-                              value: _twoFactorEnabled,
-                              onChanged: (value) {
-                                setState(() {
-                                  _twoFactorEnabled = value;
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      value ? '2FA activée' : '2FA désactivée',
-                                    ),
-                                    backgroundColor: value
-                                        ? Colors.green
-                                        : Colors.orange,
-                                  ),
-                                );
-                              },
-                              activeColor: Appcolors.color_2, // Correction
-                            ),
-                            onTap: () {
-                              setState(() {
-                                _twoFactorEnabled = !_twoFactorEnabled;
-                              });
-                            },
-                          ),
                         ],
                       ),
                     ),
@@ -410,7 +382,7 @@ class _ParametresScreenState extends State<Parametres> {
                           _buildSettingsItem(
                             icon: Icons.info_outline,
                             title: 'Version',
-                            subtitle: '1.2.0',
+                            subtitle: '1.0.0',
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,

@@ -29,11 +29,22 @@ class PersonnelService {
   }
 
   // Créer personnel
-  Future<Personnel> create(Personnel p) async {
+  static Future<Personnel> create({
+    required String nom,
+    required String prenom,
+    String? email,
+    String? tel,
+    required String token,
+  }) async {
     final response = await http.post(
       Uri.parse('${ApiConstants.baseUrl}/personnel'),
-      headers: _headers,
-      body: jsonEncode(p.toJson()),
+      headers: {...ApiConstants.headers, 'Authorization': 'Bearer $token'},
+      body: jsonEncode({
+        'nom': nom,
+        'prenom': prenom,
+        'email': email,
+        'tel': tel,
+      }),
     );
 
     if (response.statusCode == 201) {

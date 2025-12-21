@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:easysign/services/personnel_service.dart';
 
 class PersonnelAdd extends StatefulWidget {
   const PersonnelAdd({super.key});
@@ -10,16 +12,12 @@ class PersonnelAdd extends StatefulWidget {
 
 class _PersonnelAddState extends State<PersonnelAdd> {
   final _formKey = GlobalKey<FormState>();
+
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
   final _emailController = TextEditingController();
   final _telController = TextEditingController();
-  final _matriculeController = TextEditingController();
-  final _biometrie1Controller = TextEditingController();
-  final _biometrie2Controller = TextEditingController();
 
-  bool _isBiometrie1Enregistree = false;
-  bool _isBiometrie2Enregistree = false;
   bool _isLoading = false;
 
   @override
@@ -28,75 +26,69 @@ class _PersonnelAddState extends State<PersonnelAdd> {
     _prenomController.dispose();
     _emailController.dispose();
     _telController.dispose();
-    _matriculeController.dispose();
-    _biometrie1Controller.dispose();
-    _biometrie2Controller.dispose();
     super.dispose();
   }
 
-  void _enregistrerBiometrie(int numero) async {
-    setState(() {
-      if (numero == 1) {
-        _isBiometrie1Enregistree = false;
-      } else {
-        _isBiometrie2Enregistree = false;
-      }
-    });
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-    setState(() {
-      if (numero == 1) {
-        _isBiometrie1Enregistree = true;
-        _biometrie1Controller.text =
-            'Empreinte ${_prenomController.text} ${_nomController.text} #1';
-      } else {
-        _isBiometrie2Enregistree = true;
-        _biometrie2Controller.text =
-            'Empreinte ${_prenomController.text} ${_nomController.text} #2';
-      }
-    });
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Empreinte $numero enregistrée avec succès'),
-        backgroundColor: Colors.green,
-      ),
-    );
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userToken');
   }
 
-  void _enregistrerEmploye() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  Future<void> _enregistrerEmploye() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      await Future.delayed(const Duration(seconds: 2));
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        throw Exception('Utilisateur non authentifié');
+      }
+
+      await PersonnelService.create(
+        nom: _nomController.text.trim(),
+        prenom: _prenomController.text.trim(),
+        email: _emailController.text.trim().isEmpty
+            ? null
+            : _emailController.text.trim(),
+        tel: _telController.text.trim().isEmpty
+            ? null
+            : _telController.text.trim(),
+        token: token,
+      );
 
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
 
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Employé enregistré avec succès !'),
+        const SnackBar(
+          content: Text('Employé enregistré avec succès'),
           backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-          action: SnackBarAction(
-            label: 'OK',
-            textColor: Colors.white,
-            onPressed: () {},
-          ),
+          duration: Duration(seconds: 2),
         ),
       );
 
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(milliseconds: 800));
       if (!mounted) return;
-      Navigator.pop(context);
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -127,7 +119,6 @@ class _PersonnelAddState extends State<PersonnelAdd> {
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -152,12 +143,9 @@ class _PersonnelAddState extends State<PersonnelAdd> {
                               hintText: 'Prénom',
                               controller: _prenomController,
                               icon: Icons.person_outline,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer le prénom';
-                                }
-                                return null;
-                              },
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'Champ requis'
+                                  : null,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -167,29 +155,22 @@ class _PersonnelAddState extends State<PersonnelAdd> {
                               hintText: 'Nom',
                               controller: _nomController,
                               icon: Icons.person_outline,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer le nom';
-                                }
-                                return null;
-                              },
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'Champ requis'
+                                  : null,
                             ),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 12),
-
                       _buildFormField(
-                        label: 'Email',
+                        label: 'Email (optionnel)',
                         hintText: 'email@entreprise.fr',
                         controller: _emailController,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer l\'email';
-                          }
+                          if (value == null || value.isEmpty) return null;
                           if (!RegExp(
                             r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                           ).hasMatch(value)) {
@@ -198,286 +179,18 @@ class _PersonnelAddState extends State<PersonnelAdd> {
                           return null;
                         },
                       ),
-
                       const SizedBox(height: 12),
-
                       _buildFormField(
-                        label: 'Téléphone',
-                        hintText: '+33 6 12 34 56 78',
+                        label: 'Téléphone (optionnel)',
+                        hintText: '+228 90 00 00 00',
                         controller: _telController,
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
                       ),
-
-                      const SizedBox(height: 12),
-
-                      _buildFormField(
-                        label: 'Matricule',
-                        hintText: 'EMP001',
-                        controller: _matriculeController,
-                        icon: Icons.badge_outlined,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer le matricule';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Enregistrement biométrique',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Enregistrez deux empreintes pour plus de sécurité',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.fingerprint,
-                                          color: _isBiometrie1Enregistree
-                                              ? Colors.green
-                                              : Appcolors.color_2,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Empreinte 1',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: _isBiometrie1Enregistree
-                                            ? Colors.green.withValues(
-                                                alpha: 0.1,
-                                              )
-                                            : Colors.orange.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Text(
-                                        _isBiometrie1Enregistree
-                                            ? 'Enregistrée'
-                                            : 'À enregistrer',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: _isBiometrie1Enregistree
-                                              ? Colors.green
-                                              : Colors.orange,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_isBiometrie1Enregistree)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: TextFormField(
-                                      controller: _biometrie1Controller,
-                                      readOnly: true,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Empreinte enregistrée',
-                                        border: OutlineInputBorder(),
-                                        contentPadding: EdgeInsets.all(8),
-                                      ),
-                                    ),
-                                  ),
-                                const SizedBox(height: 8),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 40,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () => _enregistrerBiometrie(1),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: _isBiometrie1Enregistree
-                                          ? Colors.grey.shade300
-                                          : Appcolors.color_2,
-                                      foregroundColor: _isBiometrie1Enregistree
-                                          ? Colors.grey.shade600
-                                          : Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    icon: Icon(
-                                      _isBiometrie1Enregistree
-                                          ? Icons.check_circle
-                                          : Icons.fingerprint,
-                                      size: 16,
-                                    ),
-                                    label: Text(
-                                      _isBiometrie1Enregistree
-                                          ? 'Enregistrée'
-                                          : 'Enregistrer 1',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.fingerprint,
-                                          color: _isBiometrie2Enregistree
-                                              ? Colors.green
-                                              : Appcolors.color_2,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Empreinte 2',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: _isBiometrie2Enregistree
-                                            ? Colors.green.withValues(
-                                                alpha: 0.1,
-                                              )
-                                            : Colors.orange.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Text(
-                                        _isBiometrie2Enregistree
-                                            ? 'Enregistrée'
-                                            : 'À enregistrer',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: _isBiometrie2Enregistree
-                                              ? Colors.green
-                                              : Colors.orange,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_isBiometrie2Enregistree)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: TextFormField(
-                                      controller: _biometrie2Controller,
-                                      readOnly: true,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Empreinte enregistrée',
-                                        border: OutlineInputBorder(),
-                                        contentPadding: EdgeInsets.all(8),
-                                      ),
-                                    ),
-                                  ),
-                                const SizedBox(height: 8),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 40,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () => _enregistrerBiometrie(2),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: _isBiometrie2Enregistree
-                                          ? Colors.grey.shade300
-                                          : Appcolors.color_2,
-                                      foregroundColor: _isBiometrie2Enregistree
-                                          ? Colors.grey.shade600
-                                          : Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    icon: Icon(
-                                      _isBiometrie2Enregistree
-                                          ? Icons.check_circle
-                                          : Icons.fingerprint,
-                                      size: 16,
-                                    ),
-                                    label: Text(
-                                      _isBiometrie2Enregistree
-                                          ? 'Enregistrée'
-                                          : 'Enregistrer 2',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 16),
-
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -486,7 +199,6 @@ class _PersonnelAddState extends State<PersonnelAdd> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Appcolors.color_2,
                       foregroundColor: Colors.white,
-                      elevation: 4,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -509,39 +221,6 @@ class _PersonnelAddState extends State<PersonnelAdd> {
                           ),
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.blue.shade600,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Les empreintes biométriques sont sécurisées et chiffrées.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -573,12 +252,12 @@ class _PersonnelAddState extends State<PersonnelAdd> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          validator: validator,
           decoration: InputDecoration(
             hintText: hintText,
             prefixIcon: Icon(icon, color: const Color(0xFF1976D2)),
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          validator: validator,
         ),
       ],
     );
