@@ -174,7 +174,9 @@ class _PersonnelState extends State<Personnel> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const PersonnelShow()),
+            MaterialPageRoute(
+              builder: (_) => PersonnelShow(personnelId: personnel.id),
+            ),
           );
         },
       ),
