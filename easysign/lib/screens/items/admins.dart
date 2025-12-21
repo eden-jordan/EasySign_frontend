@@ -1,6 +1,10 @@
-import 'package:easysign/screens/others/admin_add.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:easysign/screens/others/admin_add.dart';
+import 'package:easysign/models/user.dart';
+import 'package:easysign/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Admins extends StatefulWidget {
   const Admins({super.key});
@@ -12,29 +16,120 @@ class Admins extends StatefulWidget {
 class _AdminsScreenState extends State<Admins> {
   final TextEditingController _searchController = TextEditingController();
 
-  List<Admin> admins = [
-    Admin(
-      name: 'Marie Dubois',
-      email: 'marie.dubois@entreprise.fr',
-      role: 'Super Administrateur',
-      roleColor: Colors.red,
-      isActive: true,
-    ),
-    Admin(
-      name: 'Pierre Martin',
-      email: 'pierre.martin@entreprise.fr',
-      role: 'Administrateur RH',
-      roleColor: Colors.blue,
-      isActive: true,
-    ),
-    Admin(
-      name: 'Sophie Laurent',
-      email: 'sophie.laurent@entreprise.fr',
-      role: 'Administrateur',
-      roleColor: Colors.green,
-      isActive: true,
-    ),
-  ];
+  List<User> _admins = [];
+  List<User> _filteredAdmins = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+  String? _authToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAdmins();
+    _searchController.addListener(_filterAdmins);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Récupérer le token d'authentification
+  Future<String?> _getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userToken');
+  }
+
+  // Charger les administrateurs depuis l'API
+  Future<void> _loadAdmins() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      // Récupérer le token
+      final token = await _getAuthToken();
+      if (token == null) {
+        throw Exception('Token d\'authentification manquant');
+      }
+      _authToken = token;
+
+      // Appeler l'API
+      final admins = await UserService.fetchAdmins(token);
+
+      setState(() {
+        _admins = admins;
+        _filteredAdmins = admins;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Filtrer les admins selon la recherche
+  void _filterAdmins() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredAdmins = _admins;
+      } else {
+        _filteredAdmins = _admins.where((admin) {
+          final fullName = '${admin.prenom} ${admin.nom}'.toLowerCase();
+          return fullName.contains(query) ||
+              admin.email.toLowerCase().contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  // Rafraîchir la liste
+  Future<void> _refreshAdmins() async {
+    await _loadAdmins();
+  }
+
+  // Obtenir le texte du rôle formaté
+  String _getRoleText(String role) {
+    switch (role.toLowerCase()) {
+      case 'superadmin':
+        return 'Super Administrateur';
+      case 'admin':
+        return 'Administrateur';
+      default:
+        return role;
+    }
+  }
+
+  // Obtenir la couleur du rôle
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'superadmin':
+        return Colors.red;
+      case 'admin':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Obtenir les initiales d'un admin
+  String _getInitials(String prenom, String nom) {
+    if (prenom.isNotEmpty && nom.isNotEmpty) {
+      return '${prenom[0]}${nom[0]}'.toUpperCase();
+    }
+    if (prenom.isNotEmpty) {
+      return prenom.substring(0, 2).toUpperCase();
+    }
+    if (nom.isNotEmpty) {
+      return nom.substring(0, 2).toUpperCase();
+    }
+    return '??';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +171,7 @@ class _AdminsScreenState extends State<Admins> {
                             ),
                             onPressed: () {
                               _searchController.clear();
+                              _filterAdmins();
                             },
                           )
                         : null,
@@ -104,7 +200,7 @@ class _AdminsScreenState extends State<Admins> {
                       child: Column(
                         children: [
                           Text(
-                            admins.length.toString(),
+                            _filteredAdmins.length.toString(),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -124,50 +220,18 @@ class _AdminsScreenState extends State<Admins> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            admins.where((a) => a.isActive).length.toString(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Actifs',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 12),
 
-            // Liste des administrateurs
+            // Contenu principal
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 60),
-                itemCount: admins.length,
-                itemBuilder: (context, index) {
-                  final admin = admins[index];
-                  return _buildAdminCard(admin);
-                },
+              child: RefreshIndicator(
+                onRefresh: _refreshAdmins,
+                color: Appcolors.color_2,
+                child: _buildContent(),
               ),
             ),
           ],
@@ -192,8 +256,99 @@ class _AdminsScreenState extends State<Admins> {
     );
   }
 
+  // Widget pour le contenu principal
+  Widget _buildContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Appcolors.color_2),
+      );
+    }
+
+    if (_errorMessage.isNotEmpty && _admins.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
+            const SizedBox(height: 16),
+            Text(
+              'Erreur de chargement',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _errorMessage,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _refreshAdmins,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Appcolors.color_2,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Réessayer'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_filteredAdmins.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 48, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text(
+              _searchController.text.isEmpty
+                  ? 'Aucun administrateur'
+                  : 'Aucun résultat',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _searchController.text.isEmpty
+                  ? 'Ajoutez un premier administrateur'
+                  : 'Essayez avec d\'autres termes',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 60),
+      itemCount: _filteredAdmins.length,
+      itemBuilder: (context, index) {
+        final admin = _filteredAdmins[index];
+        return _buildAdminCard(admin);
+      },
+    );
+  }
+
   // Widget pour une carte d'administrateur
-  Widget _buildAdminCard(Admin admin) {
+  Widget _buildAdminCard(User admin) {
+    final roleText = _getRoleText(admin.role);
+    final roleColor = _getRoleColor(admin.role);
+    final initials = _getInitials(admin.prenom, admin.nom);
+    final fullName = '${admin.prenom} ${admin.nom}';
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -218,7 +373,7 @@ class _AdminsScreenState extends State<Admins> {
           ),
           child: Center(
             child: Text(
-              admin.getInitials(),
+              initials,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -240,7 +395,7 @@ class _AdminsScreenState extends State<Admins> {
             ),
             const SizedBox(height: 2),
             Text(
-              admin.name,
+              fullName,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -259,12 +414,9 @@ class _AdminsScreenState extends State<Admins> {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: admin.roleColor.withOpacity(0.1),
+            color: roleColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: admin.roleColor.withOpacity(0.3),
-              width: 1,
-            ),
+            border: Border.all(color: roleColor.withOpacity(0.3), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -273,17 +425,17 @@ class _AdminsScreenState extends State<Admins> {
                 width: 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: admin.roleColor,
+                  color: roleColor,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
-                admin.role,
+                roleText,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: admin.roleColor,
+                  color: roleColor,
                 ),
               ),
             ],
@@ -292,7 +444,7 @@ class _AdminsScreenState extends State<Admins> {
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Détails de ${admin.name}'),
+              content: Text('Détails de $fullName'),
               backgroundColor: Appcolors.color_2,
             ),
           );
@@ -311,7 +463,7 @@ class _AdminsScreenState extends State<Admins> {
                     onTap: () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Modifier ${admin.name}')),
+                        SnackBar(content: Text('Modifier $fullName')),
                       );
                     },
                   ),
@@ -321,7 +473,7 @@ class _AdminsScreenState extends State<Admins> {
                     onTap: () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Supprimer ${admin.name}')),
+                        SnackBar(content: Text('Supprimer $fullName')),
                       );
                     },
                   ),
@@ -332,29 +484,5 @@ class _AdminsScreenState extends State<Admins> {
         },
       ),
     );
-  }
-}
-
-class Admin {
-  final String name;
-  final String email;
-  final String role;
-  final Color roleColor;
-  final bool isActive;
-
-  Admin({
-    required this.name,
-    required this.email,
-    required this.role,
-    required this.roleColor,
-    required this.isActive,
-  });
-
-  String getInitials() {
-    final parts = name.split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}';
-    }
-    return name.substring(0, 2).toUpperCase();
   }
 }
