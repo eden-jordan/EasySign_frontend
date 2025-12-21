@@ -36,4 +36,19 @@ class Personnel {
     'qr_code': qrCode,
     'organisation_id': organisation_id,
   };
+
+  Personnel copyWith({
+    String? nom,
+    String? prenom,
+    String? email,
+    String? tel,
+  }) {
+    return Personnel(
+      id: id,
+      nom: nom ?? this.nom,
+      prenom: prenom ?? this.prenom,
+      email: email ?? this.email,
+      tel: tel ?? this.tel,
+    );
+  }
 }

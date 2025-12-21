@@ -1,3 +1,4 @@
+import 'package:easysign/screens/others/personnel_edit.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easysign/themes/app_theme.dart';
@@ -36,270 +37,280 @@ class _PersonnelShowState extends State<PersonnelShow> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Fiche employé',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.black),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Modifier l\'employé')),
-              );
-            },
-          ),
-        ],
-      ),
-      body: FutureBuilder<Personnel>(
-        future: _personnelFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return FutureBuilder<Personnel>(
+      future: _personnelFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          if (snapshot.hasError) {
-            return Center(
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
               child: Text(
                 snapshot.error.toString().replaceAll('Exception: ', ''),
                 style: const TextStyle(color: Colors.red),
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          final personnel = snapshot.data!;
-          final fullName = '${personnel.prenom} ${personnel.nom}';
+        final personnel = snapshot.data!;
+        final fullName = '${personnel.prenom} ${personnel.nom}';
 
-          return Container(
-            color: Colors.grey.shade50,
-            child: SingleChildScrollView(
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            centerTitle: true,
+            elevation: 1,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              'Fiche employé',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.black),
+                onPressed: () async {
+                  final bool? result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PersonnelEdit(personnel: personnel),
+                    ),
+                  );
+                  if (result == true) {
+                    setState(() {
+                      _personnelFuture = _loadPersonnel();
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          body: _buildPersonnelDetails(personnel),
+        );
+      },
+    );
+  }
+
+  Widget _buildPersonnelDetails(Personnel personnel) {
+    final fullName = '${personnel.prenom} ${personnel.nom}';
+
+    return Container(
+      color: Colors.grey.shade50,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // En-tête
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // En-tête
                   Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: _applyOpacity(Appcolors.color_2, 0.10),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(
-                            child: Text(
-                              _getInitials(fullName),
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Appcolors.color_2,
-                              ),
-                            ),
-                          ),
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: _applyOpacity(Appcolors.color_2, 0.10),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getInitials(fullName),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Appcolors.color_2,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          fullName,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Employé',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
-                  // Informations personnelles
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              color: Appcolors.color_2,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Informations personnelles',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        _buildInfoRow(
-                          icon: Icons.email_outlined,
-                          label: 'Email',
-                          value: personnel.email ?? 'Non renseigné',
-                        ),
-                        const SizedBox(height: 12),
-                        _buildInfoRow(
-                          icon: Icons.phone_outlined,
-                          label: 'Téléphone',
-                          value: personnel.tel ?? 'Non renseigné',
-                        ),
-                      ],
+                  Text(
+                    fullName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  const SizedBox(height: 12),
-
-                  // Boutons d'action
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Exporter le badge PDF'),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Appcolors.color_2,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            icon: const Icon(Icons.badge, size: 20),
-                            label: const Text(
-                              'Exporter badge PDF',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Historique complet'),
-                                ),
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Appcolors.color_2,
-                              side: BorderSide(
-                                color: Appcolors.color_2,
-                                width: 2,
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            icon: const Icon(Icons.history, size: 20),
-                            label: const Text(
-                              'Voir l\'historique complet',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    'Employé',
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
-
-                  const SizedBox(height: 12),
-
-                  // Historique simulé
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.history_toggle_off_outlined,
-                              color: Appcolors.color_2,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Historique récent',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        _buildHistoryItem(
-                          icon: Icons.login,
-                          label: 'Arrivée',
-                          time: 'Aujourd\'hui, 08:15',
-                          color: Colors.green,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildHistoryItem(
-                          icon: Icons.logout,
-                          label: 'Départ',
-                          time: 'Hier, 17:30',
-                          color: Colors.red,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildHistoryItem(
-                          icon: Icons.free_breakfast_outlined,
-                          label: 'Fin pause',
-                          time: 'Hier, 13:15',
-                          color: Colors.orange,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
-          );
-        },
+
+            const SizedBox(height: 12),
+
+            // Informations personnelles
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        color: Appcolors.color_2,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Informations personnelles',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInfoRow(
+                    icon: Icons.email_outlined,
+                    label: 'Email',
+                    value: personnel.email ?? 'Non renseigné',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(
+                    icon: Icons.phone_outlined,
+                    label: 'Téléphone',
+                    value: personnel.tel ?? 'Non renseigné',
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Boutons d'action
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Exporter le badge PDF'),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Appcolors.color_2,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.badge, size: 20),
+                      label: const Text(
+                        'Exporter badge PDF',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Historique complet')),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Appcolors.color_2,
+                        side: BorderSide(color: Appcolors.color_2, width: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.history, size: 20),
+                      label: const Text(
+                        'Voir l\'historique complet',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Historique simulé
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.history_toggle_off_outlined,
+                        color: Appcolors.color_2,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Historique récent',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildHistoryItem(
+                    icon: Icons.login,
+                    label: 'Arrivée',
+                    time: 'Aujourd\'hui, 08:15',
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildHistoryItem(
+                    icon: Icons.logout,
+                    label: 'Départ',
+                    time: 'Hier, 17:30',
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildHistoryItem(
+                    icon: Icons.free_breakfast_outlined,
+                    label: 'Fin pause',
+                    time: 'Hier, 13:15',
+                    color: Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
