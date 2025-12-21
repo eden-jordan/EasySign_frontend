@@ -19,4 +19,33 @@ class UserService {
       throw Exception('Echec du chargement des admins');
     }
   }
+
+  //Ajouter un admin
+  static Future<User> addAdmin({
+    required String nom,
+    required String prenom,
+    required String email,
+    String? tel,
+    required String password,
+    required String token,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}/add-admin'),
+      headers: {...ApiConstants.headers, 'Authorization': 'Bearer $token'},
+      body: jsonEncode({
+        'nom': nom,
+        'prenom': prenom,
+        'email': email,
+        'tel': tel,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return User.fromJson(data['admin']);
+    } else {
+      throw Exception('Echec de l\'ajout de l\'admin');
+    }
+  }
 }

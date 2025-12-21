@@ -91,6 +91,7 @@ class _AdminsScreenState extends State<Admins> {
   // Rafraîchir la liste
   Future<void> _refreshAdmins() async {
     await _loadAdmins();
+    setState(() {});
   }
 
   // Obtenir le texte du rôle formaté
@@ -240,11 +241,14 @@ class _AdminsScreenState extends State<Admins> {
 
       // Bouton flottant pour ajouter
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final bool? added = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AdminAdd()),
           );
+          if (added == true) {
+            await _refreshAdmins();
+          }
         },
         backgroundColor: Appcolors.color_2,
         foregroundColor: Colors.white,

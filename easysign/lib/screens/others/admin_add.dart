@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:easysign/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminAdd extends StatefulWidget {
   const AdminAdd({super.key});
@@ -43,22 +45,46 @@ class _AdminAddState extends State<AdminAdd> {
 
     setState(() => _isLoading = true);
 
-    // Simuler l'enregistrement
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Récupérer le token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
 
-    setState(() => _isLoading = false);
+      if (token == null || token.isEmpty) {
+        throw Exception("Utilisateur non authentifié");
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Administrateur ajouté avec succès !\nRôle:'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+      // Appel API
+      await UserService.addAdmin(
+        nom: _lastNameController.text.trim(),
+        prenom: _firstNameController.text.trim(),
+        email: _emailController.text.trim(),
+        tel: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        password: _passwordController.text,
+        token: token,
+      );
 
-    // Revenir en arrière après un délai
-    await Future.delayed(const Duration(seconds: 1));
-    Navigator.pop(context);
+      //  Succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Administrateur ajouté avec succès'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true); // important pour refresh
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur : ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
