@@ -293,16 +293,16 @@ class _PersonnelShowState extends State<PersonnelShow> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Appcolors.color_2,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      icon: const Icon(Icons.badge, size: 20),
+                      icon: const Icon(Icons.badge, size: 18),
                       label: const Text(
                         'Exporter badge PDF',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -319,16 +319,16 @@ class _PersonnelShowState extends State<PersonnelShow> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Appcolors.color_2,
                         side: BorderSide(color: Appcolors.color_2, width: 2),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      icon: const Icon(Icons.history, size: 20),
+                      icon: const Icon(Icons.history, size: 18),
                       label: const Text(
                         'Voir l\'historique complet',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
