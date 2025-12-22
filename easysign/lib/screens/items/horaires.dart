@@ -72,8 +72,7 @@ class _HorairesState extends State<Horaires> {
                       departure: horaire.heureDepart,
                       breakStart: horaire.pauseDebut,
                       breakEnd: horaire.pauseFin,
-                      days: _formatJours(horaire.joursTravail),
-                      icon: Icons.access_time,
+                      days: horaire.joursTravail,
                       color: Appcolors.color_2,
                     ),
 
@@ -237,60 +236,121 @@ class _HorairesState extends State<Horaires> {
     required String departure,
     required String breakStart,
     required String breakEnd,
-    required String days,
-    required IconData icon,
+    required List<String> days,
     required Color color,
   }) {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
+                child: Icon(Icons.access_time, color: color),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Heures arrivée / départ
+          Row(
+            children: [
+              _timeBox(
+                label: 'Arrivée',
+                time: arrival,
+                icon: Icons.login,
+                color: Colors.green,
+              ),
+              const SizedBox(width: 12),
+              _timeBox(
+                label: 'Départ',
+                time: departure,
+                icon: Icons.logout,
+                color: Colors.red,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Pause
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.free_breakfast_outlined, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Pause : $breakStart - $breakEnd',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            _row('Arrivée', arrival, Icons.login, Colors.green),
-            _row('Départ', departure, Icons.logout, Colors.red),
-            const SizedBox(height: 10),
-            Text('Pause : $breakStart - $breakEnd'),
-            const SizedBox(height: 6),
-            Text('Jours : $days'),
-          ],
-        ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Jours de travail
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: days
+                .map(
+                  (day) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      day,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
       ),
     );
   }
@@ -304,6 +364,51 @@ class _HorairesState extends State<Horaires> {
           const SizedBox(width: 6),
           Text('$label : $value'),
         ],
+      ),
+    );
+  }
+
+  Widget _timeBox({
+    required String label,
+    required String time,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 16, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              time,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
