@@ -126,7 +126,14 @@ class _HorairesEditState extends State<HorairesEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modifier l’horaire'),
+        title: const Text(
+          'Modifier l’horaire',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
