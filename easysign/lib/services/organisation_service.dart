@@ -70,4 +70,18 @@ class OrganisationService {
       throw Exception('Erreur lors du chargement des horaires');
     }
   }
+
+  Future<Horaire> updateHoraire(Horaire horaire) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/horaire/${horaire.id}'),
+      headers: _headers,
+      body: jsonEncode(horaire.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return Horaire.fromJson(jsonDecode(response.body)['horaire']);
+    } else {
+      throw Exception(jsonDecode(response.body)['message']);
+    }
+  }
 }

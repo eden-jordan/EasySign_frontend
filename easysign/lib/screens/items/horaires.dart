@@ -1,3 +1,4 @@
+import 'package:easysign/screens/others/horaires_edit.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 import 'package:easysign/screens/others/horaires_add.dart';
@@ -140,21 +141,24 @@ class _HorairesState extends State<Horaires> {
                             ),
                           ),
 
-                        if (hasHoraire)
+                        if (hasHoraire && horaire != null)
                           SizedBox(
                             width: double.infinity,
                             height: 44,
                             child: OutlinedButton.icon(
                               onPressed: () async {
-                                await Navigator.push(
+                                final updated = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => HorairesAdd(),
+                                    builder: (context) =>
+                                        HorairesEdit(horaire: horaire),
                                   ),
                                 );
-                                setState(() {
-                                  _horairesFuture = _loadHoraires();
-                                });
+                                if (updated == true) {
+                                  setState(() {
+                                    _horairesFuture = _loadHoraires();
+                                  });
+                                }
                               },
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Appcolors.color_2,
