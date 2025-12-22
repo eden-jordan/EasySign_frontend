@@ -65,4 +65,23 @@ class UserService {
       throw Exception(message);
     }
   }
+
+  static Future<User> makeSuperAdmin({
+    required int adminId,
+    required String token,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}/makesuperadmin/$adminId'),
+      headers: {...ApiConstants.headers, 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return User.fromJson(data['admin']);
+    } else {
+      final data = jsonDecode(response.body);
+      final message = data['message'] ?? 'Echec de la mise à jour de l\'admin';
+      throw Exception(message);
+    }
+  }
 }

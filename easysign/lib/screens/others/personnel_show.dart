@@ -318,7 +318,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Appcolors.color_2,
-                        side: BorderSide(color: Appcolors.color_2, width: 2),
+                        side: BorderSide(color: Appcolors.color_2),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),

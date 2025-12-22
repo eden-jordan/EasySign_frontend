@@ -33,9 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             color: Appcolors.color_2,
             fontSize: 22,
-            fontWeight: FontWeight.w500,
-            fontFamily:
-                'YourCustomFont', // Si vous avez une police personnalisée
+            fontWeight:
+                FontWeight.w500, // Si vous avez une police personnalisée
           ),
         ),
         actions: [

@@ -462,6 +462,41 @@ class _AdminsScreenState extends State<Admins> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ListTile(
+                    leading: const Icon(Icons.admin_panel_settings),
+                    title: const Text('Nommer Super Administrateur'),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      if (_authToken == null) return;
+
+                      try {
+                        await UserService.makeSuperAdmin(
+                          adminId: admin.id,
+                          token: _authToken!,
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Admin promu Super Administrateur'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        await _refreshAdmins(); // recharge la liste
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.toString().replaceAll('Exception: ', ''),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+
+                  ListTile(
                     leading: const Icon(Icons.delete),
                     title: const Text('Supprimer'),
                     onTap: () async {
