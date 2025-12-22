@@ -222,41 +222,6 @@ class _HorairesAddState extends State<HorairesAdd> {
                   ),
                   child: Column(
                     children: [
-                      // Nom de l'horaire
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Nom de l\'horaire',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF333333),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: const InputDecoration(
-                              hintText: 'Ex: Horaire Standard',
-                              prefixIcon: Icon(
-                                Icons.schedule,
-                                color: Color(0xFF1976D2),
-                                size: 20,
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Veuillez entrer un nom pour l\'horaire';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 18),
-
                       // Heure d'arrivée
                       _buildTimeButton(
                         'Heure d\'arrivée',

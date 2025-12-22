@@ -24,8 +24,8 @@ class Horaire {
     organisationId: json['organisation_id'],
     heureArrivee: json['heure_arrivee'],
     heureDepart: json['heure_depart'],
-    pauseDebut: json['pause_debut'],
-    pauseFin: json['pause_fin'],
+    pauseDebut: json['heure_pause_debut'],
+    pauseFin: json['heure_pause_fin'],
     joursTravail: List<String>.from(jsonDecode(json['jours_travail'])),
   );
 
@@ -34,8 +34,8 @@ class Horaire {
     'organisation_id': organisationId,
     'heure_arrivee': heureArrivee,
     'heure_depart': heureDepart,
-    'pause_debut': pauseDebut,
-    'pause_fin': pauseFin,
+    'heure_pause_debut': pauseDebut,
+    'heure_pause_fin': pauseFin,
     'jours_travail': jsonEncode(joursTravail),
   };
 }
