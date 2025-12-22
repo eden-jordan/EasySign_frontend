@@ -4,6 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easysign/themes/app_theme.dart';
 import 'package:easysign/services/personnel_service.dart';
 import 'package:easysign/models/personnel.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 class PersonnelShow extends StatefulWidget {
   final int personnelId;
@@ -33,6 +39,87 @@ class _PersonnelShowState extends State<PersonnelShow> {
 
     final service = PersonnelService(token: token);
     return service.getById(widget.personnelId);
+  }
+
+  Future<void> _exportBadgePdf(Personnel personnel) async {
+    final pdf = pw.Document();
+
+    // Générer le QR code en image
+    final qrValidationResult = QrValidator.validate(
+      data: personnel.qrCode ?? '', // Ton champ QR
+      version: QrVersions.auto,
+      errorCorrectionLevel: QrErrorCorrectLevel.Q,
+    );
+    final qrCode = qrValidationResult.qrCode;
+
+    final painter = QrPainter.withQr(
+      qr: qrCode!,
+      color: const Color(0xFF000000),
+      gapless: true,
+    );
+
+    final picData = await painter.toImageData(200);
+    final qrImage = pw.MemoryImage(picData!.buffer.asUint8List());
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat(
+          200 * PdfPageFormat.mm,
+          120 * PdfPageFormat.mm,
+        ),
+        build: (pw.Context context) {
+          return pw.Container(
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFE0F7FA), // un bleu clair
+              border: pw.Border.all(
+                color: PdfColor.fromInt(0xFF00838F),
+                width: 2,
+              ),
+              borderRadius: pw.BorderRadius.circular(12),
+            ),
+            padding: const pw.EdgeInsets.all(16),
+            child: _buildBadgeContent(personnel),
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+  pw.Widget _buildBadgeContent(Personnel personnel) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Center(
+          child: pw.Text(
+            '${personnel.prenom} ${personnel.nom}',
+            style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+          ),
+        ),
+        pw.SizedBox(height: 12),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Tel: ${personnel.tel}'),
+                pw.Text('Email: ${personnel.email}'),
+              ],
+            ),
+            pw.BarcodeWidget(
+              data: personnel.qrCode ?? '',
+              barcode: pw.Barcode.qrCode(),
+              width: 80,
+              height: 80,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -202,13 +289,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Exporter le badge PDF'),
-                          ),
-                        );
-                      },
+                      onPressed: () => _exportBadgePdf(personnel),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Appcolors.color_2,
                         foregroundColor: Colors.white,
