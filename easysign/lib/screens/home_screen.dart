@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(
           'EasySign',
           style: TextStyle(
-            color: Appcolors.color_3,
+            color: Appcolors.color_2,
             fontSize: 22,
             fontWeight: FontWeight.w500,
             fontFamily:
