@@ -190,6 +190,7 @@ class _HorairesEditState extends State<HorairesEdit> {
                     label: Text(day),
                     selected: _workingDays[day]!,
                     selectedColor: Appcolors.color_2,
+                    labelStyle: const TextStyle(color: Colors.white),
                     onSelected: (v) {
                       setState(() => _workingDays[day] = v);
                     },
