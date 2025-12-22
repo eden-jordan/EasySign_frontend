@@ -24,7 +24,7 @@ class _HorairesAddState extends State<HorairesAdd> {
   final Map<String, bool> _workingDays = {
     'L': true, // Lundi
     'M': true, // Mardi
-    'M2': true, // Mercredi
+    'Me': true, // Mercredi
     'J': true, // Jeudi
     'V': true, // Vendredi
     'S': false, // Samedi
