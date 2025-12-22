@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easysign/services/organisation_service.dart';
+import 'package:easysign/models/horaire.dart';
 
 class HorairesAdd extends StatefulWidget {
   const HorairesAdd({super.key});
@@ -112,68 +115,92 @@ class _HorairesAddState extends State<HorairesAdd> {
   }
 
   // Valider et enregistrer l'horaire
-  void _saveSchedule() {
-    if (_formKey.currentState!.validate()) {
-      if (_arrivalTime == null || _departureTime == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Veuillez sélectionner les heures d\'arrivée et de départ',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
+  Future<void> _saveSchedule() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      // Calculer la durée de travail
-      final arrivalInMinutes = _arrivalTime!.hour * 60 + _arrivalTime!.minute;
-      final departureInMinutes =
-          _departureTime!.hour * 60 + _departureTime!.minute;
-
-      if (departureInMinutes <= arrivalInMinutes) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'L\'heure de départ doit être après l\'heure d\'arrivée',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      // Vérifier au moins un jour sélectionné
-      final hasSelectedDays = _workingDays.values.any((selected) => selected);
-      if (!hasSelectedDays) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veuillez sélectionner au moins un jour de travail'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      // Simuler l'enregistrement
+    if (_arrivalTime == null || _departureTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Horaire enregistré avec succès !'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-          action: SnackBarAction(
-            label: 'OK',
-            textColor: Colors.white,
-            onPressed: () {},
+        const SnackBar(
+          content: Text('Veuillez sélectionner les heures'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final arrivalMinutes = _arrivalTime!.hour * 60 + _arrivalTime!.minute;
+    final departureMinutes = _departureTime!.hour * 60 + _departureTime!.minute;
+
+    if (departureMinutes <= arrivalMinutes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'L\'heure de départ doit être après l\'heure d\'arrivée',
           ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final selectedDays = _workingDays.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toList();
+
+    if (selectedDays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sélectionnez au moins un jour'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+
+      if (token == null) {
+        throw Exception('Utilisateur non authentifié');
+      }
+
+      final service = OrganisationService(token: token);
+
+      final horaire = Horaire(
+        id: 0,
+        organisationId: 0,
+        heureArrivee: _formatTime(_arrivalTime!),
+        heureDepart: _formatTime(_departureTime!),
+        pauseDebut: _formatTime(_breakStartTime!),
+        pauseFin: _formatTime(_breakEndTime!),
+        joursTravail: selectedDays,
+      );
+
+      await service.addHoraire(horaire);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Horaire enregistré avec succès'),
+          backgroundColor: Colors.green,
         ),
       );
 
-      // Revenir en arrière après un délai (vérifier mounted avant d'utiliser context)
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(milliseconds: 800), () {
         if (!mounted) return;
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

@@ -43,11 +43,11 @@ class OrganisationService {
     }
   }
 
-  Future<Horaire> addHoraire(Horaire h) async {
+  Future<Horaire> addHoraire(Horaire horaire) async {
     final response = await http.post(
       Uri.parse('${ApiConstants.baseUrl}/horaire'),
       headers: _headers,
-      body: jsonEncode(h.toJson()),
+      body: jsonEncode(horaire.toJson()),
     );
 
     if (response.statusCode == 201) {

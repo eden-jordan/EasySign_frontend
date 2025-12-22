@@ -111,15 +111,17 @@ class _HorairesState extends State<Horaires> {
                             height: 44,
                             child: ElevatedButton.icon(
                               onPressed: () async {
-                                await Navigator.push(
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const HorairesAdd(),
                                   ),
                                 );
-                                setState(() {
-                                  _horairesFuture = _loadHoraires();
-                                });
+                                if (result == true) {
+                                  setState(() {
+                                    _horairesFuture = _loadHoraires();
+                                  });
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolors.color_2,
