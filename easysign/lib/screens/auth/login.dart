@@ -72,12 +72,16 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-
-      final token = response['token'];
-      final user = response['user'];
+      debugPrint('LOGIN RESPONSE = $response');
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userToken', token);
+
+      await prefs.setString('userToken', response['token']);
+
+      await prefs.setString(
+        'userRole',
+        response['user']['role'].toString().toLowerCase(),
+      );
 
       Navigator.pushReplacement(
         context,

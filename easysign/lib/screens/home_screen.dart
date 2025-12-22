@@ -1,11 +1,13 @@
-import 'package:easysign/screens/items/admins.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:easysign/themes/app_theme.dart';
 import 'package:easysign/screens/items/dashboard.dart';
 import 'package:easysign/screens/items/horaires.dart';
-import 'package:easysign/screens/items/parametres.dart';
 import 'package:easysign/screens/items/personnel.dart';
 import 'package:easysign/screens/items/rapports.dart';
-import 'package:easysign/themes/app_theme.dart';
-import 'package:flutter/material.dart';
+import 'package:easysign/screens/items/admins.dart';
+import 'package:easysign/screens/items/parametres.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,15 +19,97 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // Fonction pour naviguer vers un onglet spécifique
+  String? _userRole;
+  bool _isLoadingRole = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserRole();
+  }
+
+  // Charger le rôle utilisateur
+  Future<void> _loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userRole = prefs.getString('userRole'); // 'admin' | 'superadmin'
+      _isLoadingRole = false;
+    });
+  }
+
+  bool get _isSuperAdmin => _userRole == 'superadmin';
+
   void _navigateToTab(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
+  // Écrans dynamiques selon le rôle
+  List<Widget> get _screens {
+    final screens = <Widget>[Dashboard(onNavigateToTab: _navigateToTab)];
+
+    if (_isSuperAdmin) {
+      screens.add(const Horaires());
+    }
+
+    screens.add(const Personnel());
+    screens.add(const Rapports());
+
+    if (_isSuperAdmin) {
+      screens.add(const Admins());
+    }
+
+    return screens;
+  }
+
+  // BottomNavigationBar dynamique
+  List<BottomNavigationBarItem> get _navItems {
+    final items = <BottomNavigationBarItem>[
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.home_outlined),
+        label: 'Accueil',
+      ),
+    ];
+
+    if (_isSuperAdmin) {
+      items.add(
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_month_outlined),
+          label: 'Horaires',
+        ),
+      );
+    }
+
+    items.addAll([
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.group_outlined),
+        label: 'Personnel',
+      ),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.report_outlined),
+        label: 'Rapports',
+      ),
+    ]);
+
+    if (_isSuperAdmin) {
+      items.add(
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person_add_outlined),
+          label: 'Admins',
+        ),
+      );
+    }
+
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingRole) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -33,41 +117,37 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             color: Appcolors.color_2,
             fontSize: 22,
-            fontWeight:
-                FontWeight.w500, // Si vous avez une police personnalisée
+            fontWeight: FontWeight.w500,
           ),
         ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           Container(
+            margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200, width: 1),
+              border: Border.all(color: Colors.grey.shade200),
               borderRadius: BorderRadius.circular(10),
             ),
-            margin: EdgeInsets.only(right: 16),
             child: IconButton(
-              icon: Icon(
-                Icons.settings_outlined,
-                color: Appcolors.color_2,
-                size: 22,
-              ),
+              icon: Icon(Icons.settings_outlined, color: Appcolors.color_2),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Parametres()),
+                  MaterialPageRoute(builder: (_) => const Parametres()),
                 );
               },
             ),
           ),
         ],
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
       ),
-      body: _selectedIndex == 0
-          ? Dashboard(onNavigateToTab: _navigateToTab)
-          : _getScreenForIndex(_selectedIndex),
+
+      body: _screens[_selectedIndex],
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
+        items: _navItems,
         selectedItemColor: Appcolors.color_2,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
@@ -76,47 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            label: 'Horaires',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group_outlined),
-            label: 'Personnel',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report_outlined),
-            label: 'Rapports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_add_outlined),
-            label: 'Admins',
-          ),
-        ],
       ),
     );
-  }
-
-  // Méthode pour obtenir l'écran correspondant à l'index
-  Widget _getScreenForIndex(int index) {
-    switch (index) {
-      case 0:
-        return Dashboard(onNavigateToTab: _navigateToTab);
-      case 1:
-        return const Horaires();
-      case 2:
-        return const Personnel();
-      case 3:
-        return const Rapports();
-      case 4:
-        return const Admins();
-      default:
-        return Dashboard(onNavigateToTab: _navigateToTab);
-    }
   }
 }
