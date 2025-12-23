@@ -44,9 +44,9 @@ class _PersonnelShowState extends State<PersonnelShow> {
   Future<void> _exportBadgePdf(Personnel personnel) async {
     final pdf = pw.Document();
 
-    // Générer le QR code en image
+    // Générer le QR code
     final qrValidationResult = QrValidator.validate(
-      data: personnel.qrCode ?? '', // Ton champ QR
+      data: personnel.qrCode ?? '',
       version: QrVersions.auto,
       errorCorrectionLevel: QrErrorCorrectLevel.Q,
     );
@@ -70,15 +70,85 @@ class _PersonnelShowState extends State<PersonnelShow> {
         build: (pw.Context context) {
           return pw.Container(
             decoration: pw.BoxDecoration(
-              color: PdfColor.fromInt(0xFFE0F7FA), // un bleu clair
+              gradient: pw.LinearGradient(
+                colors: [
+                  PdfColor.fromInt(0xFFE0F7FA), // Bleu très clair
+                  PdfColor.fromInt(0xFFB2EBF2), // Bleu clair
+                ],
+                begin: pw.Alignment.topLeft,
+                end: pw.Alignment.bottomRight,
+              ),
               border: pw.Border.all(
-                color: PdfColor.fromInt(0xFF00838F),
-                width: 2,
+                color: PdfColor.fromInt(0xFF00838F), // Bleu foncé
+                width: 1.5,
               ),
               borderRadius: pw.BorderRadius.circular(12),
+              boxShadow: [
+                pw.BoxShadow(
+                  color: PdfColor.fromInt(0x33000000),
+                  blurRadius: 4,
+                ),
+              ],
             ),
-            padding: const pw.EdgeInsets.all(16),
-            child: _buildBadgeContent(personnel),
+            padding: const pw.EdgeInsets.all(20),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Nom en haut, centré et en gras
+                pw.Center(
+                  child: pw.Text(
+                    '${personnel.prenom} ${personnel.nom}',
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(
+                        0xFF006064,
+                      ), // Bleu foncé pour le texte
+                    ),
+                  ),
+                ),
+                pw.SizedBox(height: 10),
+                pw.Divider(color: PdfColor.fromInt(0xFF00838F), thickness: 1),
+
+                // Informations de contact
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'Tél: ${personnel.tel}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                        pw.SizedBox(height: 5),
+                        pw.Text(
+                          'Email: ${personnel.email}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    // QR Code avec bordure
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(4),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(
+                          color: PdfColor.fromInt(0xFF00838F),
+                          width: 1,
+                        ),
+                        borderRadius: pw.BorderRadius.circular(6),
+                      ),
+                      child: pw.BarcodeWidget(
+                        data: personnel.qrCode ?? '',
+                        barcode: pw.Barcode.qrCode(),
+                        width: 70,
+                        height: 70,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -86,39 +156,6 @@ class _PersonnelShowState extends State<PersonnelShow> {
 
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
-  }
-
-  pw.Widget _buildBadgeContent(Personnel personnel) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Center(
-          child: pw.Text(
-            '${personnel.prenom} ${personnel.nom}',
-            style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
-          ),
-        ),
-        pw.SizedBox(height: 12),
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-            pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('Tel: ${personnel.tel}'),
-                pw.Text('Email: ${personnel.email}'),
-              ],
-            ),
-            pw.BarcodeWidget(
-              data: personnel.qrCode ?? '',
-              barcode: pw.Barcode.qrCode(),
-              width: 80,
-              height: 80,
-            ),
-          ],
-        ),
-      ],
     );
   }
 
