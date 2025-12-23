@@ -6,6 +6,7 @@ class Personnel {
   final String? tel;
   final String? qrCode;
   final int? organisation_id;
+  final String? statut;
 
   Personnel({
     required this.id,
@@ -15,17 +16,28 @@ class Personnel {
     this.tel,
     this.qrCode,
     this.organisation_id,
+    this.statut,
   });
 
-  factory Personnel.fromJson(Map<String, dynamic> json) => Personnel(
-    id: json['id'],
-    nom: json['nom'],
-    prenom: json['prenom'],
-    email: json['email'],
-    tel: json['tel'],
-    qrCode: json['qr_code'],
-    organisation_id: json['organisation_id'],
-  );
+ factory Personnel.fromJson(Map<String, dynamic> json) {
+    String? statut;
+
+    if (json['presences'] != null && json['presences'].isNotEmpty) {
+      statut = json['presences'][0]['statut'];
+    } else {
+      statut = 'Absent';
+    }
+    return Personnel(
+      id: json['id'],
+      nom: json['nom'],
+      prenom: json['prenom'],
+      email: json['email'],
+      tel: json['tel'],
+      qrCode: json['qr_code'],
+      organisation_id: json['organisation_id'],
+      statut: statut,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,

@@ -143,7 +143,7 @@ class _PersonnelState extends State<Personnel> {
   }
 
   Widget _buildPersonnelCard(model.Personnel personnel) {
-    final fullName = '${personnel.prenom ?? ''} ${personnel.nom ?? ''}'.trim();
+    final fullName = '${personnel.prenom} ${personnel.nom}';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -162,7 +162,7 @@ class _PersonnelState extends State<Personnel> {
         leading: CircleAvatar(
           backgroundColor: Appcolors.color_2.withOpacity(0.1),
           child: Text(
-            fullName.isNotEmpty ? fullName[0].toUpperCase() : '?',
+            fullName[0].toUpperCase(),
             style: TextStyle(color: Appcolors.color_2),
           ),
         ),
@@ -170,7 +170,8 @@ class _PersonnelState extends State<Personnel> {
           fullName,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        subtitle: const Text('Employé'),
+        subtitle: _buildStatusBadge(personnel.statut ?? 'Absent'), // 👈 ICI
+        trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.push(
             context,
@@ -179,6 +180,61 @@ class _PersonnelState extends State<Personnel> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String statut) {
+    Color color;
+    IconData icon;
+    String label;
+
+    switch (statut) {
+      case 'Present':
+        color = Colors.green;
+        icon = Icons.check_circle;
+        label = 'Présent';
+        break;
+
+      case 'En_pause':
+        color = Colors.orange;
+        icon = Icons.pause_circle;
+        label = 'En pause';
+        break;
+
+      case 'Termine':
+        color = Colors.grey;
+        icon = Icons.remove_circle;
+        label = 'Terminé';
+
+      case 'Absent':
+      default:
+        color = Colors.red;
+        icon = Icons.cancel;
+        label = 'Absent';
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
