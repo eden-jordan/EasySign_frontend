@@ -7,28 +7,106 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Emargement extends StatelessWidget {
   const Emargement({super.key});
 
-  void _showSuccessDialog(BuildContext context, Map data) {
+  void _showSuccessDialog(BuildContext dialogcontext, Map data) {
     showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Émargement validé'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('👤 ${data['personnel']}'),
-            Text('🕒 ${data['heure']}'),
-            Text('📌 ${data['action']}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      context: dialogcontext,
+      barrierDismissible: false,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ],
-      ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icône succès
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.green,
+                    size: 48,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Titre
+                const Text(
+                  'Émargement validé',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Infos
+                _infoRow(Icons.person_outline, data['personnel']),
+                const SizedBox(height: 8),
+                _infoRow(Icons.schedule, data['heure']),
+                const SizedBox(height: 8),
+                _infoRow(Icons.flag_outlined, _formatAction(data['action'])),
+
+                const SizedBox(height: 20),
+
+                // Bouton
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(dialogcontext),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  Widget _infoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.grey.shade700),
+        const SizedBox(width: 10),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 15))),
+      ],
+    );
+  }
+
+  String _formatAction(String action) {
+    switch (action) {
+      case 'arrivee':
+        return 'Arrivée';
+      case 'pause_debut':
+        return 'Début de pause';
+      case 'pause_fin':
+        return 'Fin de pause';
+      case 'depart':
+        return 'Départ';
+      default:
+        return action;
+    }
   }
 
   void _showError(BuildContext context, String message) {
