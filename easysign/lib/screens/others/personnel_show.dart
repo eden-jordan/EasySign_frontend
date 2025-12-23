@@ -326,7 +326,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
                       ),
                       icon: const Icon(Icons.history, size: 18),
                       label: const Text(
-                        'Voir l\'historique complet',
+                        'Voir l\'historique',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
