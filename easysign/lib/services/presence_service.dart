@@ -14,15 +14,19 @@ class PresenceService {
   };
 
   // Émargement QR
-  Future<void> emarger(String qrCode, String action) async {
+  Future<Map<String, dynamic>> emarger(String qrCode) async {
     final response = await http.post(
       Uri.parse('${ApiConstants.baseUrl}/emargement'),
       headers: _headers,
-      body: jsonEncode({'qr_code': qrCode, 'action': action}),
+      body: jsonEncode({'qr_code': qrCode}),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception(jsonDecode(response.body)['message']);
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    } else {
+      throw Exception(data['message']);
     }
   }
 

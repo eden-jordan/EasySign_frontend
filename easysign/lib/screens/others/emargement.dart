@@ -1,8 +1,55 @@
+import 'package:easysign/screens/others/scan_qr_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import 'package:easysign/services/presence_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Emargement extends StatelessWidget {
   const Emargement({super.key});
+
+  void _showSuccessDialog(BuildContext context, Map data) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Émargement validé'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('👤 ${data['personnel']}'),
+            Text('🕒 ${data['heure']}'),
+            Text('📌 ${data['action']}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Future<void> _handleScan(BuildContext context, String qrCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('userToken') ?? '';
+    final service = PresenceService(token: token);
+
+    try {
+      final response = await service.emarger(qrCode);
+
+      _showSuccessDialog(context, response);
+    } catch (e) {
+      _showError(context, e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +70,7 @@ class Emargement extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Bouton Scanner biométrie
-            _buildScanButton(),
+            _buildScanButton(context),
 
             const SizedBox(height: 24),
 
@@ -106,8 +153,18 @@ class Emargement extends StatelessWidget {
     );
   }
 
-  Widget _buildScanButton() {
-    return Center(
+  Widget _buildScanButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final qrCode = await Navigator.push<String>(
+          context,
+          MaterialPageRoute(builder: (_) => const ScanQrScreen()),
+        );
+
+        if (qrCode != null) {
+          _handleScan(context, qrCode);
+        }
+      },
       child: Column(
         children: [
           Container(
@@ -116,31 +173,11 @@ class Emargement extends StatelessWidget {
             decoration: BoxDecoration(
               color: Appcolors.color_2,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Appcolors.color_2.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                ),
-              ],
             ),
             child: const Icon(Icons.qr_code, size: 40, color: Colors.white),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Scanner le code QR',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Utilisez la caméra pour scanner votre code QR d\'émargement',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
-          ),
+          const Text('Scanner le code QR'),
         ],
       ),
     );
