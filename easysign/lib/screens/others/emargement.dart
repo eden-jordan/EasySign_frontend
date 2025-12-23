@@ -3,15 +3,56 @@ import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 import 'package:easysign/services/presence_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/presence.dart';
 
-class Emargement extends StatelessWidget {
+class Emargement extends StatefulWidget {
   const Emargement({super.key});
 
-  void _showSuccessDialog(BuildContext dialogcontext, Map data) {
+  @override
+  State<Emargement> createState() => _EmargementState();
+}
+
+class _EmargementState extends State<Emargement> {
+  List<Presence> _dailyHistory = [];
+  bool _loading = true;
+  late PresenceService _service;
+
+  @override
+  void initState() {
+    super.initState();
+    _initServiceAndLoadHistory();
+  }
+
+  Future<void> _initServiceAndLoadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('userToken') ?? '';
+    _service = PresenceService(token: token);
+
+    try {
+      final data = await _service.today();
+      setState(() {
+        _dailyHistory = data;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      _showError(context, e.toString());
+    }
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  // =================== DIALOG SUCCESS ===================
+
+  void _showSuccessDialog(BuildContext context, Map data) {
     showDialog(
-      context: dialogcontext,
+      context: context,
       barrierDismissible: false,
-      builder: (_) {
+      builder: (dialogcontext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -21,7 +62,6 @@ class Emargement extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Icône succès
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -34,27 +74,18 @@ class Emargement extends StatelessWidget {
                     size: 48,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Titre
                 const Text(
                   'Émargement validé',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
-
                 const SizedBox(height: 12),
-
-                // Infos
                 _infoRow(Icons.person_outline, data['personnel']),
                 const SizedBox(height: 8),
                 _infoRow(Icons.schedule, data['heure']),
                 const SizedBox(height: 8),
                 _infoRow(Icons.flag_outlined, _formatAction(data['action'])),
-
                 const SizedBox(height: 20),
-
-                // Bouton
                 SizedBox(
                   width: double.infinity,
                   height: 44,
@@ -65,7 +96,10 @@ class Emargement extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () => Navigator.pop(dialogcontext),
+                    onPressed: () {
+                      Navigator.of(dialogcontext).pop();
+                      _initServiceAndLoadHistory();
+                    },
                     child: const Text(
                       'OK',
                       style: TextStyle(
@@ -109,25 +143,16 @@ class Emargement extends StatelessWidget {
     }
   }
 
-  void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
-  }
-
   Future<void> _handleScan(BuildContext context, String qrCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('userToken') ?? '';
-    final service = PresenceService(token: token);
-
     try {
-      final response = await service.emarger(qrCode);
-
+      final response = await _service.emarger(qrCode);
       _showSuccessDialog(context, response);
     } catch (e) {
       _showError(context, e.toString());
     }
   }
+
+  // =================== UI ===================
 
   @override
   Widget build(BuildContext context) {
@@ -137,25 +162,13 @@ class Emargement extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // En-tête avec titre et heure
             _buildHeader(context),
-
             const SizedBox(height: 16),
-
-            // Date actuelle
             _buildDateSection(),
-
             const SizedBox(height: 20),
-
-            // Bouton Scanner biométrie
             _buildScanButton(context),
-
             const SizedBox(height: 24),
-
-            // Historique du jour
             _buildDailyHistory(),
-
-            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -168,23 +181,16 @@ class Emargement extends StatelessWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          iconSize: 20,
+          onPressed: () => Navigator.pop(context),
         ),
         const Text(
           'Émargement',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Appcolors.color_2.withValues(alpha: 0.1),
+            color: Appcolors.color_2.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -219,11 +225,7 @@ class Emargement extends StatelessWidget {
           Expanded(
             child: Text(
               _getCurrentDate(),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -238,10 +240,7 @@ class Emargement extends StatelessWidget {
           context,
           MaterialPageRoute(builder: (_) => const ScanQrScreen()),
         );
-
-        if (qrCode != null) {
-          _handleScan(context, qrCode);
-        }
+        if (qrCode != null) _handleScan(context, qrCode);
       },
       child: Column(
         children: [
@@ -261,39 +260,84 @@ class Emargement extends StatelessWidget {
     );
   }
 
+  // =================== HISTORIQUE AVEC NOM & PRÉNOM ===================
+
   Widget _buildDailyHistory() {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+
+    if (_dailyHistory.isEmpty) {
+      return const Text("Aucune présence enregistrée aujourd'hui");
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Historique du jour',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
-        _buildHistoryItem(
-          type: 'Arrivée',
-          time: '08:15',
-          icon: Icons.login,
-          color: Colors.green,
-        ),
-        const SizedBox(height: 10),
-        _buildHistoryItem(
-          type: 'Début pause',
-          time: '12:00',
-          icon: Icons.coffee,
-          color: Colors.orange,
-        ),
-        const SizedBox(height: 10),
-        _buildHistoryItem(
-          type: 'Fin pause',
-          time: '13:00',
-          icon: Icons.coffee_outlined,
-          color: Colors.blue,
-        ),
+        ..._dailyHistory.map((presence) {
+          final personnel = presence.personnel;
+          final fullName = '${personnel.prenom} ${personnel.nom}';
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fullName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (presence.arrivee != null)
+                  _buildHistoryItem(
+                    type: 'Arrivée',
+                    time: presence.arrivee!.substring(11, 16),
+                    icon: Icons.login,
+                    color: Colors.green,
+                  ),
+                if (presence.pauseDebut != null)
+                  _buildHistoryItem(
+                    type: 'Début pause',
+                    time: presence.pauseDebut!.substring(11, 16),
+                    icon: Icons.coffee,
+                    color: Colors.orange,
+                  ),
+                if (presence.pauseFin != null)
+                  _buildHistoryItem(
+                    type: 'Fin pause',
+                    time: presence.pauseFin!.substring(11, 16),
+                    icon: Icons.coffee_outlined,
+                    color: Colors.blue,
+                  ),
+                if (presence.depart != null)
+                  _buildHistoryItem(
+                    type: 'Départ',
+                    time: presence.depart!.substring(11, 16),
+                    icon: Icons.logout,
+                    color: Colors.red,
+                  ),
+              ],
+            ),
+          );
+        }),
       ],
     );
   }
@@ -304,65 +348,14 @@ class Emargement extends StatelessWidget {
     required IconData icon,
     required Color color,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  type,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Enregistré à $time',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              time,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-          ),
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Text('$type : ', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(time),
         ],
       ),
     );
@@ -375,7 +368,7 @@ class Emargement extends StatelessWidget {
 
   String _getCurrentDate() {
     final now = DateTime.now();
-    final days = [
+    const days = [
       'lundi',
       'mardi',
       'mercredi',
@@ -384,7 +377,7 @@ class Emargement extends StatelessWidget {
       'samedi',
       'dimanche',
     ];
-    final months = [
+    const months = [
       'janvier',
       'février',
       'mars',

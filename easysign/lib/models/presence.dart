@@ -1,3 +1,5 @@
+import 'personnel.dart';
+
 class Presence {
   final int id;
   final int personnelId;
@@ -7,6 +9,7 @@ class Presence {
   final String? pauseDebut;
   final String? pauseFin;
   final String statut;
+  final Personnel personnel;
 
   Presence({
     required this.id,
@@ -17,6 +20,7 @@ class Presence {
     this.pauseDebut,
     this.pauseFin,
     required this.statut,
+    required this.personnel,
   });
 
   factory Presence.fromJson(Map<String, dynamic> json) => Presence(
@@ -28,6 +32,7 @@ class Presence {
     pauseDebut: json['pause_debut'],
     pauseFin: json['pause_fin'],
     statut: json['statut'],
+    personnel: Personnel.fromJson(json['personnel']),
   );
 
   Map<String, dynamic> toJson() => {
