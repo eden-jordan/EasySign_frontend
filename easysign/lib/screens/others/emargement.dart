@@ -166,7 +166,7 @@ class _EmargementState extends State<Emargement> {
             const SizedBox(height: 16),
             _buildDateSection(),
             const SizedBox(height: 20),
-            _buildScanButton(context),
+            Center(child: SizedBox(child: _buildScanButton(context))),
             const SizedBox(height: 24),
             _buildDailyHistory(),
           ],
