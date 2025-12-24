@@ -58,6 +58,60 @@ class _PersonnelShowState extends State<PersonnelShow> {
     _historyFuture = _loadHistory();
   }
 
+  void _confirmDelete(Personnel personnel) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Supprimer le personnel'),
+        content: Text(
+          'Voulez-vous vraiment supprimer ${personnel.prenom} ${personnel.nom} ?\n\nCette action est irréversible.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              _deletePersonnel(personnel.id);
+            },
+            child: const Text(
+              'Supprimer',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deletePersonnel(int id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('userToken');
+
+      if (token == null) throw Exception('Utilisateur non authentifié');
+
+      final service = PersonnelService(token: token);
+      await service.delete(id);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Personnel supprimé avec succès'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true); // retour à la liste
+    } catch (e) {
+      _showErrorSnackbar(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
   Future<List<ActionEmargement>> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('userToken');
@@ -91,7 +145,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
 
     showDialog(
       context: context,
-      builder: (_) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Historique complet',
@@ -109,7 +163,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Fermer'),
             ),
           ],
@@ -638,6 +692,10 @@ class _PersonnelShowState extends State<PersonnelShow> {
                     });
                   }
                 },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _confirmDelete(personnel),
               ),
             ],
           ),

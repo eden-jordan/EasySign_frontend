@@ -62,18 +62,6 @@ class Dashboard extends StatelessWidget {
           color: Colors.red,
           icon: Icons.cancel_outlined,
         ),
-        _buildStatCard(
-          title: 'Retards',
-          value: '5',
-          color: Colors.orange,
-          icon: Icons.access_time_outlined,
-        ),
-        _buildStatCard(
-          title: 'Retards pause',
-          value: '2',
-          color: Colors.amber,
-          icon: Icons.coffee_outlined,
-        ),
       ],
     );
   }
@@ -272,15 +260,15 @@ class Dashboard extends StatelessWidget {
                 ),
                 const Divider(height: 16),
                 _buildStatRow(
-                  label: 'Heures moy/jour',
-                  value: '8.2',
+                  label: 'Total Presents',
+                  value: '28',
                   icon: Icons.timer_outlined,
                   color: Colors.purple,
                 ),
                 const Divider(height: 16),
                 _buildStatRow(
-                  label: 'Taux présence',
-                  value: '94%',
+                  label: 'Total Absents',
+                  value: '4',
                   icon: Icons.trending_up_outlined,
                   color: Colors.green,
                 ),
