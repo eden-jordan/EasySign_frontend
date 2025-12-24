@@ -1,3 +1,4 @@
+import 'package:easysign/models/presence.dart';
 import 'package:easysign/screens/others/personnel_edit.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,6 +8,7 @@ import 'package:easysign/models/personnel.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:easysign/services/presence_service.dart';
 import 'package:intl/intl.dart';
 
 class PersonnelShow extends StatefulWidget {
@@ -20,11 +22,59 @@ class PersonnelShow extends StatefulWidget {
 
 class _PersonnelShowState extends State<PersonnelShow> {
   late Future<Personnel> _personnelFuture;
+  late Future<List<Presence>> _historyFuture;
+
+  IconData getIcon(String statut) {
+    switch (statut) {
+      case 'Present':
+        return Icons.login; // arrivée
+      case 'En_pause':
+        return Icons.free_breakfast_outlined; // pause
+      case 'Termine':
+        return Icons.logout; // départ
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  Color getColor(String statut) {
+    switch (statut) {
+      case 'Present':
+        return Colors.green;
+      case 'En_pause':
+        return Colors.orange;
+      case 'Termine':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _personnelFuture = _loadPersonnel();
+    _historyFuture = _loadHistory();
+  }
+
+  Future<List<Presence>> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('userToken');
+    if (token == null) throw Exception('Utilisateur non authentifié');
+
+    final service = PresenceService(token: token);
+    final allHistory = await service.history(widget.personnelId);
+
+    final today = DateTime.now();
+    final todayHistory = allHistory.where((p) {
+      if (p.date == null || p.date!.isEmpty) return false;
+      final date = DateTime.parse(p.date!);
+      return date.year == today.year &&
+          date.month == today.month &&
+          date.day == today.day;
+    }).toList();
+
+    return todayHistory;
   }
 
   Future<Personnel> _loadPersonnel() async {
@@ -643,7 +693,6 @@ class _PersonnelShowState extends State<PersonnelShow> {
 
             const SizedBox(height: 12),
 
-            // Historique simulé
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(16),
@@ -668,25 +717,55 @@ class _PersonnelShowState extends State<PersonnelShow> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildHistoryItem(
-                    icon: Icons.login,
-                    label: 'Arrivée',
-                    time: 'Aujourd\'hui, 08:15',
-                    color: Colors.green,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildHistoryItem(
-                    icon: Icons.logout,
-                    label: 'Départ',
-                    time: 'Hier, 17:30',
-                    color: Colors.red,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildHistoryItem(
-                    icon: Icons.free_breakfast_outlined,
-                    label: 'Fin pause',
-                    time: 'Hier, 13:15',
-                    color: Colors.orange,
+                  FutureBuilder<List<Presence>>(
+                    future: _historyFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Text(
+                          'Erreur: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.red),
+                        );
+                      }
+                      final history = snapshot.data!;
+                      if (history.isEmpty) {
+                        return const Text('Aucune présence enregistrée.');
+                      }
+
+                      return Column(
+                        children: history.map((p) {
+                          DateTime parsedDate;
+
+                          switch (p.statut) {
+                            case 'Present':
+                              parsedDate = DateTime.parse(p.arrivee!);
+                              break;
+                            case 'En_pause':
+                              parsedDate = DateTime.parse(p.pauseDebut!);
+                              break;
+                            case 'Termine':
+                              parsedDate = DateTime.parse(p.depart!);
+                              break;
+                            default:
+                              parsedDate = DateTime.now();
+                          }
+
+                          final time = DateFormat('HH:mm').format(parsedDate);
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildHistoryItem(
+                              icon: getIcon(p.statut),
+                              label: p.statut.capitalize(),
+                              time: time,
+                              color: getColor(p.statut),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -796,5 +875,12 @@ class _PersonnelShowState extends State<PersonnelShow> {
         ],
       ),
     );
+  }
+}
+
+extension StringCasingExtension on String {
+  String capitalize() {
+    if (isEmpty) return '';
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

@@ -51,6 +51,7 @@ class PresenceService {
       Uri.parse('${ApiConstants.baseUrl}/presences/$personnelId/history'),
       headers: _headers,
     );
+    print(response.body);
 
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
