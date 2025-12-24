@@ -62,4 +62,18 @@ class PresenceService {
       throw Exception('Erreur lors du chargement de l\'historique');
     }
   }
+
+  Future<List<ActionEmargement>> historyAll(int personnelId) async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/presences/$personnelId/history-all'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      List data = jsonDecode(response.body);
+      return data.map((e) => ActionEmargement.fromJson(e)).toList();
+    } else {
+      throw Exception('Erreur chargement historique');
+    }
+  }
 }

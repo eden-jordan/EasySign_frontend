@@ -71,6 +71,117 @@ class _PersonnelShowState extends State<PersonnelShow> {
     return actions;
   }
 
+  void _showFullHistoryDialog() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('userToken');
+    if (token == null) return;
+
+    final service = PresenceService(token: token);
+    final actions = await service.historyAll(widget.personnelId);
+
+    if (!mounted) return;
+
+    // Grouper par date
+    final Map<String, List<ActionEmargement>> grouped = {};
+
+    for (var a in actions) {
+      final date = DateFormat('dd/MM/yyyy').format(DateTime.parse(a.timestamp));
+      grouped.putIfAbsent(date, () => []).add(a);
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text(
+            'Historique complet',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                children: grouped.entries.map((entry) {
+                  return _buildHistoryDateBlock(entry.key, entry.value);
+                }).toList(),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fermer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildHistoryDateBlock(String date, List<ActionEmargement> actions) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            date,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Column(
+            children: actions.map((a) {
+              final time = DateFormat(
+                'HH:mm',
+              ).format(DateTime.parse(a.timestamp));
+
+              IconData icon;
+              Color color;
+
+              switch (a.typeAction) {
+                case 'arrivee':
+                  icon = Icons.login;
+                  color = Colors.green;
+                  break;
+                case 'pause_debut':
+                  icon = Icons.free_breakfast_outlined;
+                  color = Colors.orange;
+                  break;
+                case 'pause_fin':
+                  icon = Icons.login;
+                  color = Colors.green;
+                  break;
+                case 'depart':
+                  icon = Icons.logout;
+                  color = Colors.red;
+                  break;
+                default:
+                  icon = Icons.help_outline;
+                  color = Colors.grey;
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildHistoryItem(
+                  icon: icon,
+                  label: a.typeAction.capitalize(),
+                  time: time,
+                  color: color,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<Personnel> _loadPersonnel() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('userToken');
@@ -658,11 +769,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Historique complet')),
-                        );
-                      },
+                      onPressed: _showFullHistoryDialog,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Appcolors.color_2,
                         side: BorderSide(color: Appcolors.color_2),
