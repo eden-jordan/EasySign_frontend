@@ -1,3 +1,4 @@
+import 'package:easysign/models/action_emargement.dart';
 import 'package:easysign/models/presence.dart';
 import 'package:easysign/screens/others/personnel_edit.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class PersonnelShow extends StatefulWidget {
 
 class _PersonnelShowState extends State<PersonnelShow> {
   late Future<Personnel> _personnelFuture;
-  late Future<List<Presence>> _historyFuture;
+  late Future<List<ActionEmargement>> _historyFuture;
 
   IconData getIcon(String statut) {
     switch (statut) {
@@ -57,24 +58,17 @@ class _PersonnelShowState extends State<PersonnelShow> {
     _historyFuture = _loadHistory();
   }
 
-  Future<List<Presence>> _loadHistory() async {
+  Future<List<ActionEmargement>> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('userToken');
     if (token == null) throw Exception('Utilisateur non authentifié');
 
     final service = PresenceService(token: token);
-    final allHistory = await service.history(widget.personnelId);
 
-    final today = DateTime.now();
-    final todayHistory = allHistory.where((p) {
-      if (p.date == null || p.date!.isEmpty) return false;
-      final date = DateTime.parse(p.date!);
-      return date.year == today.year &&
-          date.month == today.month &&
-          date.day == today.day;
-    }).toList();
+    // Nouvelle méthode pour récupérer toutes les actions du jour
+    final actions = await service.history(widget.personnelId);
 
-    return todayHistory;
+    return actions;
   }
 
   Future<Personnel> _loadPersonnel() async {
@@ -717,7 +711,7 @@ class _PersonnelShowState extends State<PersonnelShow> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  FutureBuilder<List<Presence>>(
+                  FutureBuilder<List<ActionEmargement>>(
                     future: _historyFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -735,32 +729,42 @@ class _PersonnelShowState extends State<PersonnelShow> {
                       }
 
                       return Column(
-                        children: history.map((p) {
-                          DateTime parsedDate;
+                        children: history.map((a) {
+                          DateTime parsedDate = DateTime.parse(a.timestamp);
+                          final time = DateFormat('HH:mm').format(parsedDate);
 
-                          switch (p.statut) {
-                            case 'Present':
-                              parsedDate = DateTime.parse(p.arrivee!);
+                          IconData icon;
+                          Color color;
+
+                          switch (a.typeAction) {
+                            case 'arrivee':
+                              icon = Icons.login;
+                              color = Colors.green;
                               break;
-                            case 'En_pause':
-                              parsedDate = DateTime.parse(p.pauseDebut!);
+                            case 'pause_debut':
+                              icon = Icons.free_breakfast_outlined;
+                              color = Colors.orange;
                               break;
-                            case 'Termine':
-                              parsedDate = DateTime.parse(p.depart!);
+                            case 'pause_fin':
+                              icon = Icons.login;
+                              color = Colors.green;
+                              break;
+                            case 'depart':
+                              icon = Icons.logout;
+                              color = Colors.red;
                               break;
                             default:
-                              parsedDate = DateTime.now();
+                              icon = Icons.help_outline;
+                              color = Colors.grey;
                           }
-
-                          final time = DateFormat('HH:mm').format(parsedDate);
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: _buildHistoryItem(
-                              icon: getIcon(p.statut),
-                              label: p.statut.capitalize(),
+                              icon: icon,
+                              label: a.typeAction.capitalize(),
                               time: time,
-                              color: getColor(p.statut),
+                              color: color,
                             ),
                           );
                         }).toList(),

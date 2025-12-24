@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:easysign/models/action_emargement.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/presence.dart';
 import '../core/constants/api_constants.dart';
@@ -46,7 +48,7 @@ class PresenceService {
   }
 
   // Historique d’un personnel
-  Future<List<Presence>> history(int personnelId) async {
+  Future<List<ActionEmargement>> history(int personnelId) async {
     final response = await http.get(
       Uri.parse('${ApiConstants.baseUrl}/presences/$personnelId/history'),
       headers: _headers,
@@ -55,7 +57,7 @@ class PresenceService {
 
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
-      return data.map((e) => Presence.fromJson(e)).toList();
+      return data.map((e) => ActionEmargement.fromJson(e)).toList();
     } else {
       throw Exception('Erreur lors du chargement de l\'historique');
     }
