@@ -1,46 +1,81 @@
 import 'package:easysign/screens/others/emargement.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
+import '../../models/rapport.dart';
+import '../../services/rapport_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   final Function(int)? onNavigateToTab;
 
   const Dashboard({super.key, this.onNavigateToTab});
 
   @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  Rapport? rapport;
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRapport();
+  }
+
+  // Récupérer le token d'authentification
+  Future<String?> _getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userToken');
+  }
+
+  Future<void> _loadRapport() async {
+    try {
+      final token = await _getAuthToken();
+      if (token == null) {
+        print("Token d'authentification non trouvé.");
+        return;
+      }
+
+      final service = RapportService(token: token);
+      final data = await service.journalier();
+      setState(() {
+        rapport = data;
+        loading = false;
+      });
+    } catch (e) {
+      setState(() => loading = false);
+      print("Erreur lors du chargement du rapport : $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cartes de statistiques
             _buildStatsCards(),
-
             const SizedBox(height: 16),
-
-            // Section Graphique
             _buildPresenceChart(),
-
             const SizedBox(height: 16),
-
-            // Section Statistiques personnel
             _buildPersonnelStats(),
-
             const SizedBox(height: 16),
-
-            // Section Actions rapides
             _buildQuickActions(context),
-
-            const SizedBox(height: 12),
           ],
         ),
       ),
     );
   }
 
-  // Cartes de statistiques
+  // ================= Cartes de statistiques =================
   Widget _buildStatsCards() {
     return GridView.count(
       shrinkWrap: true,
@@ -52,13 +87,13 @@ class Dashboard extends StatelessWidget {
       children: [
         _buildStatCard(
           title: 'Présents',
-          value: '24',
+          value: rapport?.totalPresent.toString() ?? '0',
           color: Colors.green,
           icon: Icons.check_circle_outline,
         ),
         _buildStatCard(
           title: 'Absents',
-          value: '3',
+          value: rapport?.totalAbsents.toString() ?? '0',
           color: Colors.red,
           icon: Icons.cancel_outlined,
         ),
@@ -78,21 +113,21 @@ class Dashboard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 20),
@@ -121,7 +156,7 @@ class Dashboard extends StatelessWidget {
     );
   }
 
-  // Graphique présences
+  // ================= Graphique des présences =================
   Widget _buildPresenceChart() {
     return Container(
       decoration: BoxDecoration(
@@ -129,24 +164,20 @@ class Dashboard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Présences de la semaine',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             const Text(
@@ -186,7 +217,7 @@ class Dashboard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // Légende du graphique
+            // Légende
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -215,64 +246,51 @@ class Dashboard extends StatelessWidget {
     );
   }
 
-  // Statistiques personnel
+  // ================= Statistiques personnel =================
   Widget _buildPersonnelStats() {
+    int totalEmployes =
+        (rapport?.totalPresent ?? 0) + (rapport?.totalAbsents ?? 0);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Statistiques du personnel',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Statistiques personnel',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-
-            // Liste des statistiques
-            Column(
-              children: [
-                _buildStatRow(
-                  label: 'Total employés',
-                  value: '32',
-                  icon: Icons.people_outline,
-                  color: Colors.blue,
-                ),
-                const Divider(height: 16),
-                _buildStatRow(
-                  label: 'Total Presents',
-                  value: '28',
-                  icon: Icons.check_circle_outline,
-                  color: Colors.green,
-                ),
-                const Divider(height: 16),
-                _buildStatRow(
-                  label: 'Total Absents',
-                  value: '4',
-                  icon: Icons.cancel_outlined,
-                  color: Colors.red,
-                ),
-              ],
+            _buildStatRow(
+              label: 'Total employés',
+              value: totalEmployes.toString(),
+              icon: Icons.people_outline,
+              color: Colors.blue,
+            ),
+            const Divider(height: 16),
+            _buildStatRow(
+              label: 'Total Présents',
+              value: (rapport?.totalPresent ?? 0).toString(),
+              icon: Icons.check_circle_outline,
+              color: Colors.green,
+            ),
+            const Divider(height: 16),
+            _buildStatRow(
+              label: 'Total Absents',
+              value: (rapport?.totalAbsents ?? 0).toString(),
+              icon: Icons.cancel_outlined,
+              color: Colors.red,
             ),
           ],
         ),
@@ -291,7 +309,7 @@ class Dashboard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: color, size: 18),
@@ -305,17 +323,13 @@ class Dashboard extends StatelessWidget {
         ),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 
-  // Actions rapides
+  // ================= Actions rapides =================
   Widget _buildQuickActions(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -323,27 +337,22 @@ class Dashboard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Actions rapides',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -368,25 +377,19 @@ class Dashboard extends StatelessWidget {
                 _buildQuickActionButton(
                   icon: Icons.person_add_outlined,
                   label: 'Personnel',
-                  onTap: () {
-                    onNavigateToTab?.call(2);
-                  },
+                  onTap: () => widget.onNavigateToTab?.call(2),
                   color: Colors.green,
                 ),
                 _buildQuickActionButton(
                   icon: Icons.calendar_today_outlined,
                   label: 'Horaires',
-                  onTap: () {
-                    onNavigateToTab?.call(1);
-                  },
+                  onTap: () => widget.onNavigateToTab?.call(1),
                   color: Colors.orange,
                 ),
                 _buildQuickActionButton(
                   icon: Icons.report_outlined,
                   label: 'Rapports',
-                  onTap: () {
-                    onNavigateToTab?.call(3);
-                  },
+                  onTap: () => widget.onNavigateToTab?.call(3),
                   color: Colors.purple,
                 ),
               ],
@@ -407,9 +410,9 @@ class Dashboard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withOpacity(0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
