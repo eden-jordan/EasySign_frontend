@@ -115,23 +115,19 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(
           'EasySign',
           style: TextStyle(
-            color: Appcolors.color_2,
+            color: Colors.white,
             fontSize: 22,
             fontWeight: FontWeight.w500,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Appcolors.color_2,
         elevation: 0,
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200),
-              borderRadius: BorderRadius.circular(10),
-            ),
             child: IconButton(
-              icon: Icon(Icons.settings_outlined, color: Appcolors.color_2),
+              icon: Icon(Icons.settings_outlined, color: Colors.white),
               onPressed: () {
                 Navigator.push(
                   context,

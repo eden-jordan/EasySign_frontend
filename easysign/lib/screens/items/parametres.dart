@@ -92,12 +92,12 @@ class _ParametresScreenState extends State<Parametres> {
         MaterialPageRoute(builder: (_) => const StartScreen()),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Déconnexion réussie'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Déconnexion réussie'),
+      //     backgroundColor: Colors.green,
+      //   ),
+      // );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
