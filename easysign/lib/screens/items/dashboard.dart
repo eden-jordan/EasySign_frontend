@@ -4,6 +4,8 @@ import 'package:easysign/themes/app_theme.dart';
 import '../../models/rapport.dart';
 import '../../services/rapport_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 
 class Dashboard extends StatefulWidget {
   final Function(int)? onNavigateToTab;
@@ -24,7 +26,6 @@ class _DashboardState extends State<Dashboard> {
     _loadRapport();
   }
 
-  // Récupérer le token d'authentification
   Future<String?> _getAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userToken');
@@ -33,10 +34,7 @@ class _DashboardState extends State<Dashboard> {
   Future<void> _loadRapport() async {
     try {
       final token = await _getAuthToken();
-      if (token == null) {
-        print("Token d'authentification non trouvé.");
-        return;
-      }
+      if (token == null) return;
 
       final service = RapportService(token: token);
       final data = await service.journalier();
@@ -52,9 +50,7 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (loading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -158,6 +154,10 @@ class _DashboardState extends State<Dashboard> {
 
   // ================= Graphique des présences =================
   Widget _buildPresenceChart() {
+    int present = rapport?.totalPresent ?? 0;
+    int absent = rapport?.totalAbsents ?? 0;
+    int retard = rapport?.totalRetards ?? 0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -170,79 +170,104 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Présences de la semaine',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Graphique présences',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-
-            // Simuler un graphique simple
-            Container(
-              height: 100,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.bar_chart_outlined,
-                      size: 40,
-                      color: Colors.grey.shade400,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Présences aujourd\'hui',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: BarChart(
+              BarChartData(
+                backgroundColor: Colors.white,
+                alignment: BarChartAlignment.spaceAround,
+                maxY: (present + absent + retard).toDouble() + 2,
+                barTouchData: BarTouchData(enabled: true),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (double value, TitleMeta meta) {
+                        switch (value.toInt()) {
+                          case 0:
+                            return const Text('Présent');
+                          case 1:
+                            return const Text('Retard');
+                          case 2:
+                            return const Text('Absent');
+                          default:
+                            return const Text('');
+                        }
+                      },
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Graphique des présences',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true, interval: 1),
+                  ),
                 ),
+                borderData: FlBorderData(show: false),
+                barGroups: [
+                  BarChartGroupData(
+                    x: 0,
+                    barRods: [
+                      BarChartRodData(
+                        toY: present.toDouble(),
+                        color: Colors.green,
+                        width: 22,
+                        borderRadius: BorderRadius.circular(4),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: max(present, absent).toDouble() + 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                    showingTooltipIndicators: [0],
+                  ),
+                  BarChartGroupData(
+                    x: 1,
+                    barRods: [
+                      BarChartRodData(
+                        toY: retard.toDouble(),
+                        color: Colors.orange,
+                        width: 22,
+                        borderRadius: BorderRadius.circular(4),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: max(present, absent).toDouble() + 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                    showingTooltipIndicators: [0],
+                  ),
+                  BarChartGroupData(
+                    x: 2,
+                    barRods: [
+                      BarChartRodData(
+                        toY: absent.toDouble(),
+                        color: Colors.red,
+                        width: 22,
+                        borderRadius: BorderRadius.circular(4),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: max(present, absent).toDouble() + 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                    showingTooltipIndicators: [0],
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 10),
-
-            // Légende
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildLegendItem(color: Colors.green, label: 'Présent'),
-                _buildLegendItem(color: Colors.orange, label: 'Retard'),
-                _buildLegendItem(color: Colors.red, label: 'Absent'),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildLegendItem({required Color color, required String label}) {
-    return Row(
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 11)),
-      ],
     );
   }
 
@@ -343,59 +368,55 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Actions rapides',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.8,
-              children: [
-                _buildQuickActionButton(
-                  icon: Icons.qr_code,
-                  label: 'Émargement',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Emargement(),
-                      ),
-                    );
-                  },
-                  color: Appcolors.color_2,
-                ),
-                _buildQuickActionButton(
-                  icon: Icons.person_add_outlined,
-                  label: 'Personnel',
-                  onTap: () => widget.onNavigateToTab?.call(2),
-                  color: Colors.green,
-                ),
-                _buildQuickActionButton(
-                  icon: Icons.calendar_today_outlined,
-                  label: 'Horaires',
-                  onTap: () => widget.onNavigateToTab?.call(1),
-                  color: Colors.orange,
-                ),
-                _buildQuickActionButton(
-                  icon: Icons.report_outlined,
-                  label: 'Rapports',
-                  onTap: () => widget.onNavigateToTab?.call(3),
-                  color: Colors.purple,
-                ),
-              ],
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Actions rapides',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 2.8,
+            children: [
+              _buildQuickActionButton(
+                icon: Icons.qr_code,
+                label: 'Émargement',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Emargement()),
+                  );
+                },
+                color: Appcolors.color_2,
+              ),
+              _buildQuickActionButton(
+                icon: Icons.person_add_outlined,
+                label: 'Personnel',
+                onTap: () => widget.onNavigateToTab?.call(2),
+                color: Colors.green,
+              ),
+              _buildQuickActionButton(
+                icon: Icons.calendar_today_outlined,
+                label: 'Horaires',
+                onTap: () => widget.onNavigateToTab?.call(1),
+                color: Colors.orange,
+              ),
+              _buildQuickActionButton(
+                icon: Icons.report_outlined,
+                label: 'Rapports',
+                onTap: () => widget.onNavigateToTab?.call(3),
+                color: Colors.purple,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
