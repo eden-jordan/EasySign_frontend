@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'EasySign',
+          'EASYSIGN',
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
