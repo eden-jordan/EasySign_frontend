@@ -7,9 +7,7 @@ import 'package:easysign/models/personnel.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
+import 'package:intl/intl.dart';
 
 class PersonnelShow extends StatefulWidget {
   final int personnelId;
@@ -44,108 +42,236 @@ class _PersonnelShowState extends State<PersonnelShow> {
   Future<void> _exportBadgePdf(Personnel personnel) async {
     final pdf = pw.Document();
 
-    // Générer le QR code
-    final qrValidationResult = QrValidator.validate(
-      data: personnel.qrCode ?? '',
-      version: QrVersions.auto,
-      errorCorrectionLevel: QrErrorCorrectLevel.Q,
-    );
-    final qrCode = qrValidationResult.qrCode;
+    final fullName = '${personnel.prenom} ${personnel.nom}';
+    final initials = _getInitials(fullName);
+    final qrData = personnel.qrCode?.isNotEmpty == true
+        ? personnel.qrCode!
+        : '';
 
-    final painter = QrPainter.withQr(
-      qr: qrCode!,
-      color: const Color(0xFF000000),
-      gapless: true,
-    );
+    // Couleurs
+    final primaryColor = PdfColor.fromInt(0xFF1a237e);
+    final secondaryColor = PdfColor.fromInt(0xFF0d47a1);
+    final accentColor = PdfColor.fromInt(0xFFe3f2fd);
+    final textColor = PdfColor.fromInt(0xFF212121);
+    final subtitleColor = PdfColor.fromInt(0xFF757575);
+    final lightGray = PdfColor.fromInt(0xFFF5F5F5);
+    final white = PdfColors.white;
 
-    final picData = await painter.toImageData(200);
-    final qrImage = pw.MemoryImage(picData!.buffer.asUint8List());
+    String formatDate(DateTime date) {
+      final day = date.day.toString().padLeft(2, '0');
+      final month = date.month.toString().padLeft(2, '0');
+      final year = date.year.toString();
+      return '$day/$month/$year';
+    }
 
+    final currentDate = formatDate(DateTime.now());
+
+    // ---------------- Page 1 : Recto ----------------
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat(
-          200 * PdfPageFormat.mm,
-          120 * PdfPageFormat.mm,
+          150 * PdfPageFormat.mm,
+          100 * PdfPageFormat.mm,
         ),
-        build: (pw.Context context) {
+        build: (context) {
           return pw.Container(
             decoration: pw.BoxDecoration(
-              gradient: pw.LinearGradient(
-                colors: [
-                  PdfColor.fromInt(0xFFE0F7FA), // Bleu très clair
-                  PdfColor.fromInt(0xFFB2EBF2), // Bleu clair
-                ],
-                begin: pw.Alignment.topLeft,
-                end: pw.Alignment.bottomRight,
-              ),
-              border: pw.Border.all(
-                color: PdfColor.fromInt(0xFF00838F), // Bleu foncé
-                width: 1.5,
-              ),
+              color: white,
               borderRadius: pw.BorderRadius.circular(12),
-              boxShadow: [
-                pw.BoxShadow(
-                  color: PdfColor.fromInt(0x33000000),
-                  blurRadius: 4,
-                ),
-              ],
+              border: pw.Border.all(
+                color: PdfColor.fromInt(0xFFE0E0E0),
+                width: 0.5,
+              ),
             ),
-            padding: const pw.EdgeInsets.all(20),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // Nom en haut, centré et en gras
-                pw.Center(
-                  child: pw.Text(
-                    '${personnel.prenom} ${personnel.nom}',
-                    style: pw.TextStyle(
-                      fontSize: 24,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColor.fromInt(
-                        0xFF006064,
-                      ), // Bleu foncé pour le texte
+                // Bande supérieure
+                pw.Container(
+                  height: 24,
+                  decoration: pw.BoxDecoration(
+                    gradient: pw.LinearGradient(
+                      colors: [primaryColor, secondaryColor],
+                      begin: pw.Alignment.topLeft,
+                      end: pw.Alignment.bottomRight,
+                    ),
+                    borderRadius: const pw.BorderRadius.only(
+                      topLeft: pw.Radius.circular(12),
+                      topRight: pw.Radius.circular(12),
+                    ),
+                  ),
+                  child: pw.Center(
+                    child: pw.Text(
+                      'BADGE PROFESSIONNEL',
+                      style: pw.TextStyle(
+                        color: white,
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-                pw.SizedBox(height: 10),
-                pw.Divider(color: PdfColor.fromInt(0xFF00838F), thickness: 1),
 
-                // Informations de contact
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'Tél: ${personnel.tel}',
-                          style: const pw.TextStyle(fontSize: 12),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(16),
+                  child: pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // Initiales / Photo
+                      pw.Container(
+                        width: 60,
+                        height: 60,
+                        margin: const pw.EdgeInsets.only(right: 16),
+                        decoration: pw.BoxDecoration(
+                          shape: pw.BoxShape.circle,
+                          gradient: pw.LinearGradient(
+                            colors: [secondaryColor, primaryColor],
+                            begin: pw.Alignment.topLeft,
+                            end: pw.Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            pw.BoxShadow(
+                              color: PdfColor.fromInt(0x33000000),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
-                        pw.SizedBox(height: 5),
-                        pw.Text(
-                          'Email: ${personnel.email}',
-                          style: const pw.TextStyle(fontSize: 12),
+                        child: pw.Center(
+                          child: pw.Text(
+                            initials,
+                            style: pw.TextStyle(
+                              color: white,
+                              fontSize: 24,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                    // QR Code avec bordure
-                    pw.Container(
-                      padding: const pw.EdgeInsets.all(4),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(
-                          color: PdfColor.fromInt(0xFF00838F),
-                          width: 1,
-                        ),
-                        borderRadius: pw.BorderRadius.circular(6),
                       ),
-                      child: pw.BarcodeWidget(
-                        data: personnel.qrCode ?? '',
-                        barcode: pw.Barcode.qrCode(),
-                        width: 70,
-                        height: 70,
+
+                      // Infos principales
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              fullName,
+                              style: pw.TextStyle(
+                                color: textColor,
+                                fontSize: 16,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.SizedBox(height: 6),
+                            pw.Container(
+                              decoration: pw.BoxDecoration(
+                                color: accentColor,
+                                borderRadius: pw.BorderRadius.circular(4),
+                              ),
+                              padding: const pw.EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: pw.Text(
+                                'EMPLOYÉ',
+                                style: pw.TextStyle(
+                                  color: primaryColor,
+                                  fontSize: 10,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            pw.SizedBox(height: 12),
+
+                            // Email
+                            pw.Row(
+                              children: [
+                                pw.Container(
+                                  width: 20,
+                                  height: 20,
+                                  margin: const pw.EdgeInsets.only(right: 6),
+                                  decoration: pw.BoxDecoration(
+                                    color: lightGray,
+                                    borderRadius: pw.BorderRadius.circular(4),
+                                  ),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      '@',
+                                      style: pw.TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 10,
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                pw.Expanded(
+                                  child: pw.Text(
+                                    personnel.email ?? 'Non renseigné',
+                                    style: pw.TextStyle(
+                                      color: textColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            pw.SizedBox(height: 6),
+
+                            // Téléphone
+                            pw.Row(
+                              children: [
+                                pw.Container(
+                                  width: 20,
+                                  height: 20,
+                                  margin: const pw.EdgeInsets.only(right: 6),
+                                  decoration: pw.BoxDecoration(
+                                    color: lightGray,
+                                    borderRadius: pw.BorderRadius.circular(4),
+                                  ),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      'Tel',
+                                      style: pw.TextStyle(fontSize: 10),
+                                    ),
+                                  ),
+                                ),
+                                pw.Expanded(
+                                  child: pw.Text(
+                                    personnel.tel ?? 'Non renseigné',
+                                    style: pw.TextStyle(
+                                      color: textColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+
+                // Pied de page
+                pw.Spacer(),
+                pw.Container(
+                  decoration: pw.BoxDecoration(
+                    color: lightGray,
+                    borderRadius: const pw.BorderRadius.only(
+                      bottomLeft: pw.Radius.circular(12),
+                      bottomRight: pw.Radius.circular(12),
                     ),
-                  ],
+                  ),
+                  padding: const pw.EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 16,
+                  ),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [],
+                  ),
                 ),
               ],
             ),
@@ -154,9 +280,149 @@ class _PersonnelShowState extends State<PersonnelShow> {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
+    // ---------------- Page 2 : Verso ----------------
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat(
+          150 * PdfPageFormat.mm,
+          100 * PdfPageFormat.mm,
+        ),
+        build: (context) {
+          return pw.Container(
+            decoration: pw.BoxDecoration(
+              color: white,
+              borderRadius: pw.BorderRadius.circular(12),
+              border: pw.Border.all(
+                color: PdfColor.fromInt(0xFFE0E0E0),
+                width: 0.5,
+              ),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Container(
+                  height: 24,
+                  decoration: pw.BoxDecoration(
+                    gradient: pw.LinearGradient(
+                      colors: [secondaryColor, primaryColor],
+                      begin: pw.Alignment.topLeft,
+                      end: pw.Alignment.bottomRight,
+                    ),
+                    borderRadius: const pw.BorderRadius.only(
+                      topLeft: pw.Radius.circular(12),
+                      topRight: pw.Radius.circular(12),
+                    ),
+                  ),
+                  child: pw.Center(
+                    child: pw.Text(
+                      'IDENTIFICATION NUMÉRIQUE',
+                      style: pw.TextStyle(
+                        color: white,
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                pw.SizedBox(height: 20),
+
+                // QR code
+                pw.BarcodeWidget(
+                  barcode: pw.Barcode.qrCode(
+                    errorCorrectLevel: pw.BarcodeQRCorrectionLevel.high,
+                  ),
+                  data: qrData,
+                  width: 120,
+                  height: 120,
+                  drawText: false,
+                  color: primaryColor,
+                ),
+
+                pw.SizedBox(height: 12),
+                pw.Text(
+                  'SCANNER POUR VÉRIFICATION',
+                  style: pw.TextStyle(
+                    color: primaryColor,
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 8),
+
+                pw.Spacer(),
+
+                // Instructions
+                pw.Container(
+                  decoration: pw.BoxDecoration(
+                    color: accentColor,
+                    borderRadius: pw.BorderRadius.circular(8),
+                  ),
+                  padding: const pw.EdgeInsets.all(12),
+                  margin: const pw.EdgeInsets.symmetric(horizontal: 16),
+                  child: pw.Text(
+                    'INSTRUCTIONS :\n'
+                    ' Présentez ce badge à l\'entrée\n'
+                    ' Badge personnel et non transférable\n'
+                    ' Conserver en bon état',
+                    style: pw.TextStyle(
+                      color: textColor,
+                      fontSize: 8,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+
+                pw.SizedBox(height: 12),
+
+                // Pied de page verso
+                pw.Container(
+                  decoration: pw.BoxDecoration(
+                    color: lightGray,
+                    borderRadius: const pw.BorderRadius.only(
+                      bottomLeft: pw.Radius.circular(12),
+                      bottomRight: pw.Radius.circular(12),
+                    ),
+                  ),
+                  padding: const pw.EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 16,
+                  ),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        'ÉMIS LE: $currentDate',
+                        style: pw.TextStyle(color: subtitleColor, fontSize: 8),
+                      ),
+                      pw.Text(
+                        initials,
+                        style: pw.TextStyle(
+                          color: primaryColor,
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
+
+    // Impression ou export
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+  }
+
+  void _showErrorSnackbar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
