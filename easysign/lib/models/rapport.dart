@@ -1,39 +1,42 @@
+import 'rapportpersonnel.dart';
+
 class Rapport {
-  final int id;
-  final int organisationId;
-  final String date;
+  final String periode;
+  final String dateDebut;
+  final String dateFin;
+
   final int totalPresent;
   final int totalAbsents;
   final int totalRetards;
   final int totalPauseRetards;
 
+  final List<Rapportpersonnel> personnels;
+
   Rapport({
-    required this.id,
-    required this.organisationId,
-    required this.date,
+    required this.periode,
+    required this.dateDebut,
+    required this.dateFin,
     required this.totalPresent,
     required this.totalAbsents,
     required this.totalRetards,
     required this.totalPauseRetards,
+    required this.personnels,
   });
 
-  factory Rapport.fromJson(Map<String, dynamic> json) => Rapport(
-    id: json['id'],
-    organisationId: json['organisation_id'],
-    date: json['date'],
-    totalPresent: json['total_present'],
-    totalAbsents: json['total_absents'],
-    totalRetards: json['total_retards'],
-    totalPauseRetards: json['total_pause_retards'],
-  );
+  factory Rapport.fromJson(Map<String, dynamic> json) {
+    return Rapport(
+      periode: json['periode'],
+      dateDebut: json['date_debut'],
+      dateFin: json['date_fin'],
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'organisation_id': organisationId,
-    'date': date,
-    'total_present': totalPresent,
-    'total_absents': totalAbsents,
-    'total_retards': totalRetards,
-    'total_pause_retards': totalPauseRetards,
-  };
+      totalPresent: json['totaux']['present'],
+      totalAbsents: json['totaux']['absent'],
+      totalRetards: json['totaux']['retard'],
+      totalPauseRetards: json['totaux']['retard_pause'],
+
+      personnels: (json['personnels'] as List)
+          .map((e) => Rapportpersonnel.fromJson(e))
+          .toList(),
+    );
+  }
 }

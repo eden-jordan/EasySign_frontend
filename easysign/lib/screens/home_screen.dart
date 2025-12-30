@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     screens.add(const Personnel());
-    screens.add(const Rapports());
+    screens.add(const RapportScreen());
 
     if (_isSuperAdmin) {
       screens.add(const Admins());

@@ -13,18 +13,45 @@ class RapportService {
     'Authorization': 'Bearer $token',
   };
 
-  // Rapport journalier
   Future<Rapport> journalier({String? date}) async {
     final uri = Uri.parse(
       '${ApiConstants.baseUrl}/rapport/journalier',
-    ).replace(queryParameters: {'date': date ?? ''});
+    ).replace(queryParameters: {if (date != null) 'date': date});
 
     final response = await http.get(uri, headers: _headers);
 
     if (response.statusCode == 200) {
       return Rapport.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Erreur lors du chargement du rapport journalier');
+      throw Exception('Erreur rapport journalier');
+    }
+  }
+
+  Future<Rapport> mensuel({required int month, required int year}) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}/rapport/mensuel').replace(
+      queryParameters: {'month': month.toString(), 'year': year.toString()},
+    );
+
+    final response = await http.get(uri, headers: _headers);
+
+    if (response.statusCode == 200) {
+      return Rapport.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Erreur rapport mensuel');
+    }
+  }
+
+  Future<Rapport> annuel({required int year}) async {
+    final uri = Uri.parse(
+      '${ApiConstants.baseUrl}/rapport/annuel',
+    ).replace(queryParameters: {'year': year.toString()});
+
+    final response = await http.get(uri, headers: _headers);
+
+    if (response.statusCode == 200) {
+      return Rapport.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Erreur rapport annuel');
     }
   }
 }
