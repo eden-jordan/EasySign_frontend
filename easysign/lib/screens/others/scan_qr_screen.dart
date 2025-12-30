@@ -1,3 +1,4 @@
+import 'package:easysign/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:async';
@@ -64,20 +65,23 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final scanAreaSize = size.width * 0.7;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Scanner QR Code',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+        backgroundColor: Appcolors.color_2,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24),
+          icon: const Icon(Icons.arrow_back, size: 24, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -85,7 +89,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
             icon: Icon(
               _isFlashOn ? Icons.flash_on : Icons.flash_off,
               size: 24,
-              color: isDark ? Colors.white : Colors.grey[800],
+              color: Colors.white,
             ),
             onPressed: () {
               setState(() {
@@ -95,11 +99,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
             },
           ),
           IconButton(
-            icon: Icon(
-              Icons.cameraswitch,
-              size: 24,
-              color: isDark ? Colors.white : Colors.grey[800],
-            ),
+            icon: Icon(Icons.cameraswitch, size: 24, color: Colors.white),
             onPressed: () {
               setState(() {
                 _isFrontCamera = !_isFrontCamera;

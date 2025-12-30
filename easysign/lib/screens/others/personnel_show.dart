@@ -661,24 +661,24 @@ class _PersonnelShowState extends State<PersonnelShow> {
 
         return Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: Appcolors.color_2,
             centerTitle: true,
             elevation: 1,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
             title: const Text(
               'Fiche employé',
               style: TextStyle(
-                color: Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
               ),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.edit, color: Colors.black),
+                icon: const Icon(Icons.edit, color: Colors.white),
                 onPressed: () async {
                   final bool? result = await Navigator.push(
                     context,

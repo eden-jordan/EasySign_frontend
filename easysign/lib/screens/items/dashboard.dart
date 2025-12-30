@@ -1,4 +1,5 @@
 import 'package:easysign/screens/others/emargement.dart';
+import 'package:easysign/screens/others/personnel_add.dart';
 import 'package:flutter/material.dart';
 import 'package:easysign/themes/app_theme.dart';
 import '../../models/rapport.dart';
@@ -58,13 +59,15 @@ class _DashboardState extends State<Dashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatsCards(),
-            const SizedBox(height: 16),
-            _buildPresenceChart(),
-            const SizedBox(height: 16),
-            _buildPersonnelStats(),
             const SizedBox(height: 16),
             _buildQuickActions(context),
+            const SizedBox(height: 32),
+            _buildStatsCards(),
+            // const SizedBox(height: 16),
+            // _buildPresenceChart(),
+            const SizedBox(height: 32),
+            _buildPersonnelStats(),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -185,7 +188,7 @@ class _DashboardState extends State<Dashboard> {
               BarChartData(
                 backgroundColor: Colors.white,
                 alignment: BarChartAlignment.spaceAround,
-                maxY: (present + absent + retard).toDouble() + 2,
+                maxY: (present + absent + retard).toInt() + 2,
                 barTouchData: BarTouchData(enabled: true),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
@@ -206,7 +209,13 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                   leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true, interval: 1),
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      getTitlesWidget: (double value, TitleMeta meta) {
+                        return Text(value.toInt().toString());
+                      },
+                    ),
                   ),
                 ),
                 borderData: FlBorderData(show: false),
@@ -221,7 +230,7 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(4),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
-                          toY: max(present, absent).toDouble() + 2,
+                          toY: max(present, absent).toInt() + 2,
                           color: Colors.white,
                         ),
                       ),
@@ -238,7 +247,7 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(4),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
-                          toY: max(present, absent).toDouble() + 2,
+                          toY: max(present, absent).toInt() + 2,
                           color: Colors.white,
                         ),
                       ),
@@ -255,7 +264,7 @@ class _DashboardState extends State<Dashboard> {
                         borderRadius: BorderRadius.circular(4),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
-                          toY: max(present, absent).toDouble() + 2,
+                          toY: max(present, absent).toInt() + 2,
                           color: Colors.white,
                         ),
                       ),
@@ -398,21 +407,29 @@ class _DashboardState extends State<Dashboard> {
               ),
               _buildQuickActionButton(
                 icon: Icons.person_add_outlined,
-                label: 'Personnel',
-                onTap: () => widget.onNavigateToTab?.call(2),
-                color: Colors.green,
+                label: 'Ajouter personnel',
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PersonnelAdd()),
+                  );
+                  if (result == true) {
+                    _loadRapport();
+                  }
+                },
+                color: Appcolors.color_3,
+              ),
+              _buildQuickActionButton(
+                icon: Icons.group_outlined,
+                label: 'Administrateurs',
+                onTap: () => widget.onNavigateToTab?.call(4),
+                color: Appcolors.color_3,
               ),
               _buildQuickActionButton(
                 icon: Icons.calendar_today_outlined,
                 label: 'Horaires',
                 onTap: () => widget.onNavigateToTab?.call(1),
-                color: Colors.orange,
-              ),
-              _buildQuickActionButton(
-                icon: Icons.report_outlined,
-                label: 'Rapports',
-                onTap: () => widget.onNavigateToTab?.call(3),
-                color: Colors.purple,
+                color: Appcolors.color_2,
               ),
             ],
           ),

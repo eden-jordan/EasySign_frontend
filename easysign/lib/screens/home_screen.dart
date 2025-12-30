@@ -116,27 +116,73 @@ class _HomeScreenState extends State<HomeScreen> {
           'EASYSIGN',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w500,
+            fontSize: 24, // Légèrement augmenté pour plus d'impact
+            fontWeight: FontWeight.w700, // Plus gras pour mieux se démarquer
+            letterSpacing: 1.5, // Espacement amélioré pour l'élégance
           ),
         ),
         centerTitle: true,
         backgroundColor: Appcolors.color_2,
-        elevation: 0,
+        elevation: 3, // Ombre subtile pour la profondeur
+        shadowColor: Colors.black.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(15), // Bords arrondis subtils en bas
+          ),
+        ),
         actions: [
+          // Container avec effet de profondeur
           Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: IconButton(
-              icon: Icon(Icons.settings_outlined, color: Colors.white),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const Parametres()),
-                );
-              },
+            margin: const EdgeInsets.only(right: 12),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(30),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Parametres()),
+                  );
+                },
+                splashColor: Colors.white.withOpacity(
+                  0.2,
+                ), // Effet de splash personnalisé
+                highlightColor: Colors.white.withOpacity(
+                  0.1,
+                ), // Effet de highlight
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.settings_outlined,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
+        // Dégradé subtil sur la couleur existante
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Appcolors.color_2, Appcolors.color_2.withOpacity(0.95)],
+              stops: [0.0, 1.0],
+            ),
+          ),
+        ),
+        // Hauteur légèrement augmentée
+        toolbarHeight: 70,
       ),
 
       body: _screens[_selectedIndex],
